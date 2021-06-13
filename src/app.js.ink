@@ -8,6 +8,8 @@ json := load('json')
 serJSON := json.ser
 deJSON := json.de
 
+Newline := char(10)
+
 ` utilities `
 
 fetchAPI := (url, data, withRespJSON) => (
@@ -138,11 +140,13 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 		_ -> ()
 	}
 	hae('button', ['file-tree-node-file'], {}, {
-		click: () => (
-			State.openFiles.len(State.openFiles) := file
-			fetchFileContent(file, render)
-			render()
-		)
+		click: () => file.type :: {
+			'file' -> (
+				State.openFiles.len(State.openFiles) := file
+				fetchFileContent(file, render)
+				render()
+			)
+		}
 	}, [file.name])
 	file.open? :: {
 		false -> ()
@@ -168,14 +172,31 @@ Sidebar := () => h('div', ['sidebar'], [
 	FileTreeList(State.files)
 ])
 
+FileLine := (n, line) => h('code', ['file-line'], [
+	h('span', ['file-line-no'], [n])
+	h('span', ['file-line-text'], [line])
+])
+
 FilePanel := file => h('div', ['file-panel'], [
 	h('div', ['file-panel-header'], [
-		h('span', ['file-panel-header-path'], [trimSuffix(file.path, file.name)])
-		h('span', ['file-panel-header-name'], [file.name])
+		h('div', ['file-panel-header-info'], [
+			h('span', ['file-panel-header-path'], [trimSuffix(file.path, file.name)])
+			h('span', ['file-panel-header-name'], [file.name])
+		])
+		hae('button', ['file-panel-close'], {}, {
+			click: () => (
+				State.openFiles := filter(State.openFiles, f => ~(f = file))
+				render()
+			)
+		}, ['x'])
 	])
 	file.content :: {
 		() -> h('pre', ['file-panel-code', 'loading'], [])
-		_ -> h('pre', ['file-panel-code'], [file.content])
+		_ -> h(
+			'pre'
+			['file-panel-code']
+			map(split(file.content, Newline), (line, i) => FileLine(i + 1, line))
+		)
 	}
 ])
 

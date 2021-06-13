@@ -4,3 +4,132 @@ body {
     font-family: sans-serif;
 }
 
+body {
+    background: var(--primary-bg);
+    font-family: var(--sans);
+
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+
+    /* color variables taken from Merlot */
+    --primary-bg: #f9fafb;
+    --primary-text: #111111;
+    --secondary-bg: #f3f4f6;
+    --secondary-text: #9b9b9b;
+    --hover-bg: #eaebec;
+    --active-bg: #dcdfe4;
+    --translucent: rgba(249, 250, 251, .8);
+    --transparent: rgba(249, 250, 251, 0);
+
+    /* repl text colors */
+    --error: #da1111;
+}
+
+.dark {
+    --primary-bg: #2f3437;
+    --primary-text: #ebebeb;
+    --secondary-bg: #373c3f;
+    --secondary-text: #a4a7a9;
+    --hover-bg: #474c50;
+    --active-bg: #626569;
+    --translucent: rgba(47, 52, 55, .8);
+    --transparent: rgba(47, 52, 55, 0);
+
+    --error: #ff554c;
+}
+
+a {
+    color: var(--primary-text);
+    text-decoration: underline;
+}
+
+button {
+    font-size: 1em;
+}
+
+pre,
+code,
+input,
+select,
+option,
+textarea {
+    color: var(--primary-text);
+    font-size: 1em;
+    font-family: var(--mono);
+}
+
+#root,
+.app {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.sidebar {
+    width: 300px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--secondary-bg);
+}
+
+.file-area {
+    width: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.file-panel {
+    border-right: 2px solid var(--active-bg);
+    height: 100%;
+    width: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-panel:last-child {
+    border-right: 0;
+}
+
+.file-panel .file-panel-header {
+    height: 36px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-panel .file-panel-code {
+    height: 0;
+    flex-grow: 1;
+    overflow: auto;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3em;
+    padding-bottom: 5em;
+}
+
+.file-line .file-line-no {
+    display: inline-block;
+    color: var(--secondary-text);
+    padding-right: 8px;
+    text-align: right;
+    width: 3em;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
