@@ -58,17 +58,21 @@ State := {
 		language: string
 	} `
 	repo: ()
-	` List<{
+	` List<File: {
 		open?: boolean
 		name: string
 		path: string
 		type: 'file' | 'dir' | ...
 		download: string
 		content: string | ()
-		children: typeof State.files | ()
+		children: List<File> | ()
 	}> `
 	files: []
-	openFiles: []
+	` List<Pane: {
+		active: File
+		files: List<File>
+	}> `
+	panes: []
 }
 
 ` UI components `
@@ -142,7 +146,17 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 	hae('button', ['file-tree-node-file'], {}, {
 		click: () => file.type :: {
 			'file' -> (
-				State.openFiles.len(State.openFiles) := file
+				` TODO: support multi-pane `
+				pane := State.panes.0 :: {
+					() -> State.panes := [{
+						active: file
+						files: [file]
+					}]
+					_ -> (
+						pane.files.len(pane.files) := file
+						pane.active := file
+					)
+				}
 				fetchFileContent(file, render)
 				render()
 			)
@@ -177,32 +191,55 @@ FileLine := (n, line) => h('code', ['file-line'], [
 	h('span', ['file-line-text'], [line])
 ])
 
-FilePanel := file => h('div', ['file-panel'], [
-	h('div', ['file-panel-header'], [
-		h('div', ['file-panel-header-info'], [
-			h('span', ['file-panel-header-path'], [trimSuffix(file.path, file.name)])
-			h('span', ['file-panel-header-name'], [file.name])
-		])
-		hae('button', ['file-panel-close'], {}, {
-			click: () => (
-				State.openFiles := filter(State.openFiles, f => ~(f = file))
-				render()
-			)
-		}, ['x'])
-	])
-	file.content :: {
-		() -> h('pre', ['file-panel-code', 'loading'], [])
+FilePane := pane => h('div', ['file-pane'], [
+	h('div', ['file-pane-header'], (
+		map(pane.files, file => h('div', ['file-pane-header'], [
+			h('div', ['file-pane-header-tab'], [
+				hae(
+					'button'
+					['file-pane-header-info']
+					{title: file.path}
+					{
+						click: () => render(pane.active := file)
+					}
+					[
+						h('span', ['file-pane-header-path'], [trimSuffix(file.path, file.name)])
+						h('span', ['file-pane-header-name'], [file.name])
+					]
+				)
+				hae('button', ['file-pane-close'], {}, {
+					click: () => (
+						pane.files := filter(pane.files, f => ~(f = file))
+						pane.files :: {
+							` if pane is empty, remove pane from panes `
+							[] -> State.panes := filter(State.panes, p => ~(p = pane))
+							` otherwise, set active pane file to something else `
+							_ -> pane.active :: {
+								` if current file was active, choose a different active file `
+								file -> pane.active := pane.files.0
+							}
+						}
+						render()
+					)
+				}, ['x'])
+			])
+		]))
+	))
+	content := pane.active.content :: {
+		() -> h('pre', ['file-pane-code', 'loading'], [])
 		_ -> h(
 			'pre'
-			['file-panel-code']
-			map(split(file.content, Newline), (line, i) => FileLine(i + 1, line))
+			['file-pane-code']
+			map(split(content, Newline), (line, i) => FileLine(i + 1, line))
 		)
 	}
 ])
 
-FileArea := () => h('div', ['file-area'], (
-	map(State.openFiles, file => FilePanel(file))
-))
+FilePanes := () => h(
+	'div'
+	['file-panes']
+	map(State.panes, pane => FilePane(pane))
+)
 
 ` globals and callbacks `
 
@@ -213,7 +250,7 @@ update := r.update
 refreshRepo := () => (
 	State.repo := ()
 	State.files := []
-	State.openFiles := []
+	State.panes := []
 	render()
 
 	` TODO: at some point, this translation should move to backend `
@@ -266,7 +303,7 @@ render := () => update(h(
 	['app']
 	[
 		Sidebar()
-		FileArea()
+		FilePanes()
 	]
 ))
 

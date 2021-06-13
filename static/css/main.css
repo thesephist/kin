@@ -80,7 +80,7 @@ textarea {
     background: var(--secondary-bg);
 }
 
-.file-area {
+.file-panes {
     width: 0;
     flex-grow: 1;
     display: flex;
@@ -88,7 +88,7 @@ textarea {
     height: 100%;
 }
 
-.file-panel {
+.file-pane {
     border-right: 2px solid var(--active-bg);
     height: 100%;
     width: 0;
@@ -97,21 +97,25 @@ textarea {
     flex-direction: column;
 }
 
-.file-panel:last-child {
+.file-pane:last-child {
     border-right: 0;
 }
 
-.file-panel .file-panel-header {
+.file-pane .file-pane-header {
     height: 36px;
     flex-grow: 0;
     flex-shrink: 0;
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
-.file-panel .file-panel-code {
+.file-pane .file-pane-header-path {
+    color: var(--secondary-text);
+}
+
+.file-pane .file-pane-code {
     height: 0;
     flex-grow: 1;
     overflow: auto;
