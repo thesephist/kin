@@ -9,13 +9,17 @@ json := load('../vendor/json')
 serJSON := json.ser
 deJSON := json.de
 
+cache := load('cache')
+
 AccessToken := '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'
 APIRoot := 'https://api.github.com'
 GitHubV3Accept := 'application/vnd.github.v3+json'
 UserAgent := 'ink, dotink.co'
 
+Cache := (cache.new)()
+cacheGet := Cache.get
+
 getAPI := (path, withResp) => (
-	log(f('[api] GET {{ 0 }}', [path]))
 	request := {
 		url: APIRoot + path
 		headers: {
@@ -24,20 +28,7 @@ getAPI := (path, withResp) => (
 			'Authorization': 'token ' + AccessToken
 		}
 	}
-
-	req(request, evt => evt.type :: {
-		'resp' -> statusCode := evt.data.status :: {
-			200 -> withResp(evt.data.body)
-			_ -> (
-				log('[err] response status ' + string(statusCode))
-				withResp(())
-			)
-		}
-		'error' -> (
-			log('[err] ' + evt.message)
-			withResp(())
-		)
-	})
+	cacheGet(request, resp => withResp(resp))
 )
 
 ` Get repository JSON with name as user/repo `
