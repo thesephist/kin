@@ -28,7 +28,10 @@ getAPI := (path, withResp) => (
 	req(request, evt => evt.type :: {
 		'resp' -> statusCode := evt.data.status :: {
 			200 -> withResp(evt.data.body)
-			_ -> log('[err] response status ' + string(statusCode))
+			_ -> (
+				log('[err] response status ' + string(statusCode))
+				withResp(())
+			)
 		}
 		'error' -> (
 			log('[err] ' + evt.message)
@@ -39,13 +42,19 @@ getAPI := (path, withResp) => (
 
 ` Get repository JSON with name as user/repo `
 getRepo := (name, withRepo) => (
-	getAPI('/repos/' + name, resp => withRepo(deJSON(resp)))
+	getAPI('/repos/' + name, resp => resp :: {
+		() -> withRepo(())
+		_ -> withRepo(deJSON(resp))
+	})
 )
 
 getContents := (name, path, withContents) => (
 	getAPI(
 		f('/repos/{{ 0 }}/contents{{ 1 }}', [name, path])
-		resp => withContents(deJSON(resp))
+		resp => resp :: {
+			() -> withContents(())
+			_ -> withContents(deJSON(resp))
+		}
 	)
 )
 

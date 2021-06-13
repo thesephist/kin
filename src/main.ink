@@ -38,40 +38,51 @@ addRoute := server.addRoute
 ` directory traversal paths `
 addRoute('/repo/:userName/:repoName/files/*pathName', params => (req, end) => req.method :: {
 	'GET' -> getContents(
-		params.userName + '/' + params.repoName, '/' + params.pathName
-		contents => (
-			end({
-				status: 200
-				headers: {'Content-Type': 'text/plain'}
-				body: serJSON(contents)
-			})
-		)
+		params.userName + '/' + params.repoName
+		'/' + params.pathName
+		contents => contents :: {
+			() -> end(NotFound)
+			_ -> (
+				end({
+					status: 200
+					headers: {'Content-Type': 'text/plain'}
+					body: serJSON(contents)
+				})
+			)
+		}
 	)
 	_ -> end(MethodNotAllowed)
 })
 addRoute('/repo/:userName/:repoName/files', params => (req, end) => req.method :: {
 	'GET' -> getContents(
-		params.userName + '/' + params.repoName, '/'
-		contents => (
-			end({
-				status: 200
-				headers: {'Content-Type': 'text/plain'}
-				body: serJSON(contents)
-			})
-		)
+		params.userName + '/' + params.repoName
+		'/'
+		contents => contents :: {
+			() -> end(NotFound)
+			_ -> (
+				end({
+					status: 200
+					headers: {'Content-Type': 'text/plain'}
+					body: serJSON(contents)
+				})
+			)
+		}
 	)
 	_ -> end(MethodNotAllowed)
 })
 
 ` repo read paths `
 addRoute('/repo/:userName/:repoName', params => (req, end) => req.method :: {
-	'GET' -> getRepo(params.userName + '/' + params.repoName, repo => (
-		end({
-			status: 200
-			headers: {'Content-Type': 'application/json'}
-			body: serJSON(repo)
-		})
-	))
+	'GET' -> getRepo(params.userName + '/' + params.repoName, repo => repo :: {
+		() -> end(NotFound)
+		_ -> (
+			end({
+				status: 200
+				headers: {'Content-Type': 'application/json'}
+				body: serJSON(repo)
+			})
+		)
+	})
 	_ -> end(MethodNotAllowed)
 })
 
