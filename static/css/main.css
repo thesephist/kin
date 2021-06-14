@@ -55,14 +55,18 @@ button:active {
 }
 
 pre,
-code,
+code {
+    font-size: 1em;
+    font-family: var(--mono);
+}
+
 input,
 select,
 option,
 textarea {
     color: var(--primary-text);
     font-size: 1em;
-    font-family: var(--mono);
+    font-family: var(--sans);
 }
 
 #root,
@@ -87,6 +91,127 @@ textarea {
     background: var(--secondary-bg);
 	padding: 8px;
 	box-sizing: border-box;
+}
+
+nav {
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+nav a.home-link {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.125em;
+    transition: opacity .2s;
+}
+
+nav a.home-link:hover {
+    opacity: .8;
+}
+
+.repo-panel .repo-panel-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.repo-panel .repo-header-link {
+    width: 0;
+    flex-grow: 1;
+}
+
+.repo-panel .repo-toggle-input {
+    flex-grow: 0;
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: var(--secondary-text);
+    cursor: pointer;
+}
+
+.repo-panel .repo-toggle-input:hover {
+    text-decoration: underline;
+}
+
+.repo-input-panel {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+.repo-input-panel input,
+.repo-input-panel button {
+    width: 100%;
+    border-radius: 4px;
+    padding: 4px 8px;
+    border: 0;
+    box-sizing: border-box;
+}
+
+.repo-input-panel input {
+    border: 0;
+    background: var(--hover-bg);
+    margin-bottom: 8px;
+}
+
+.repo-input-panel input:focus {
+    outline: 0;
+    background: var(--active-bg);
+}
+
+.repo-input-panel .repo-input-submit {
+    color: var(--primary-bg);
+    background: var(--primary-text);
+    cursor: pointer;
+    padding: 8px;
+}
+
+.repo-input-panel .repo-input-submit:focus,
+.repo-input-panel .repo-input-submit:hover {
+    opacity: .7;
+}
+
+.repo-info-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.repo-panel .repo-header-link a,
+.repo-info-panel .repo-info-homepage a {
+    text-decoration: none;
+}
+
+.repo-panel .repo-header-link a:hover,
+.repo-info-panel .repo-info-homepage a:hover {
+    text-decoration: underline;
+}
+
+.repo-info-panel .repo-info-description {
+    line-height: 1.5em;
+    margin-bottom: 8px;
+}
+
+.repo-info-panel .repo-info-homepage,
+.repo-info-panel .repo-info-language {
+    font-size: .875em;
+}
+
+.repo-info-panel .repo-info-homepage {
+    margin-bottom: 12px;
+}
+
+.repo-info-panel .repo-info-homepage a {
+    color: var(--secondary-text);
+}
+
+.repo-info-panel .repo-info-language {
+    border-radius: 6px;
+    color: var(--primary-bg);
+    background: var(--secondary-text);
+    padding: 2px 7px;
 }
 
 .file-tree-list-container {
@@ -244,7 +369,7 @@ li.file-tree-list-item {
     border-radius: 4px;
     padding: 2px;
     box-sizing: content-box;
-    transition: opacity .2s;
+    transition: opacity .2s, background .2s;
 }
 
 .file-pane .file-pane-close:hover {
@@ -266,32 +391,53 @@ li.file-tree-list-item {
 .file-preview.file-preview-image {
     padding: 12px;
     box-sizing: border-box;
+    background: var(--active-bg);
 }
 
 .file-preview .file-preview-image-content {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: scale-down;
 }
 
 .file-preview.file-preview-text {
-    overflow: auto;
+    tab-size: 4;
+    overflow-x: hidden;
+    overflow-y: auto;
 	-webkit-overflow-scrolling: auto;
-    display: flex;
-    flex-direction: column;
-    line-height: 1.3em;
-    padding-top: 8px;
-    padding-bottom: 5em;
+    line-height: 1.25em;
+    height: 0;
+    flex-grow: 1;
 }
 
-.file-line .file-line-no {
-    display: inline-block;
+.file-preview .file-preview-text-scroller {
+    display: flex;
+    flex-direction: row;
+    margin: 8px 0;
+}
+
+.file-preview-text .file-preview-line-no,
+.file-preview-text .file-preview-line-texts {
+    margin: 0;
+}
+
+.file-preview-text .file-preview-line-nos {
     color: var(--secondary-text);
-    padding-right: 8px;
+    padding-right: 12px;
     text-align: right;
     width: 3em;
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.file-preview-text .file-preview-line-texts {
+    width: 0;
+    flex-grow: 1;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 

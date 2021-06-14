@@ -118,49 +118,78 @@ RepoPanel := (
 	state := {
 		userName: State.userName
 		repoName: State.repoName
+		inputVisible: false
 	}
 
 	() => h('div', ['repo-panel'], [
-		h('div', ['repo-input-panel'], [
-			hae(
-				'input', ['repo-input-username']
-				{value: state.userName}
-				{
-					input: evt => (
-						state.userName := evt.target.value
-						render()
-					)
-				}
-				[]
-			)
-			hae(
-				'input', ['repo-input-reponame']
-				{value: state.repoName}
-				{
-					input: evt => (
-						state.repoName := evt.target.value
-						render()
-					)
-				}
-				[]
-			)
-			hae('button', ['repo-input-submit'], {}, {
-				click: () => (
-					State.userName := state.userName
-					State.repoName := state.repoName
-					refreshRepo()
+		h('div', ['repo-panel-header'], [
+			h('div', ['repo-header-link'], [
+				Link(
+					f('{{ userName }}/{{ repoName }}', State)
+					f('https://github.com/{{ userName }}/{{ repoName }}', State)
 				)
-			}, ['Go'])
+			])
+			hae('button', ['repo-toggle-input'], {}, {
+				click: evt => (
+					state.inputVisible := ~(state.inputVisible)
+					state.inputVisible :: {
+						true -> (
+							state.userName := State.userName
+							state.repoName := State.repoName
+						)
+					}
+					render()
+				)
+			}, ['edit'])
 		])
+		state.inputVisible :: {
+			true -> h('div', ['repo-input-panel'], [
+				hae(
+					'input', ['repo-input-username']
+					{
+						value: state.userName
+						placeholder: 'username'
+					}
+					{
+						input: evt => (
+							state.userName := evt.target.value
+							render()
+						)
+					}
+					[]
+				)
+				hae(
+					'input', ['repo-input-reponame']
+					{
+						value: state.repoName
+						placeholder: 'repo name'
+					}
+					{
+						input: evt => (
+							state.repoName := evt.target.value
+							render()
+						)
+					}
+					[]
+				)
+				hae('button', ['repo-input-submit'], {}, {
+					click: () => (
+						State.userName := state.userName
+						State.repoName := state.repoName
+						state.inputVisible := false
+						refreshRepo()
+					)
+				}, ['Go'])
+			])
+		}
 		repo := State.repo :: {
 			() -> h('div', ['repo-info-panel', 'empty'], [
 				'Loading repo...'
 			])
 			_ -> h('div', ['repo-info-panel'], [
-				h('div', ['repo-info-line'], [repo.owner.username])
-				h('div', ['repo-info-line'], [repo.description])
-				h('div', ['repo-info-line'], [Link(repo.homepage, repo.homepage)])
-				h('div', ['repo-info-line'], [repo.language])
+				h('div', ['repo-info-description'], [repo.description])
+				h('div', ['repo-info-homepage'], [Link(repo.homepage, repo.homepage)])
+				h('div', ['repo-info-language'], [repo.language])
 			])
 		}
 	])
@@ -219,6 +248,11 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 							render()
 						)
 					}
+					'dir' -> (
+						file.open? := ~(file.open?)
+						fetchFileChildren(file, render)
+						render()
+					)
 				}
 			}, [file.name])
 		]
@@ -241,17 +275,12 @@ FileTreeList := files => h('ul', ['file-tree-list'], (
 
 Sidebar := () => h('div', ['sidebar'], [
 	h('nav', [], [
-		ha('a', [], {href: '/'}, ['Ink codebase browser'])
+		ha('a', ['home-link'], {href: '/'}, ['Ink codebase browser'])
 	])
 	RepoPanel()
 	h('div', ['file-tree-list-container'], [
 		FileTreeList(State.files)
 	])
-])
-
-FileLine := (n, line) => h('code', ['file-line'], [
-	h('span', ['file-line-no'], [n])
-	h('span', ['file-line-text'], [line])
 ])
 
 FilePreview := file => fileTypeFromPath(file.path) :: {
@@ -264,11 +293,28 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 		[ha('img', ['file-preview-image-content'], {src: file.download}, [])]
 	)
 	FileType.Text -> content := file.content :: {
-		() -> h('pre', ['file-preview', 'file-preview-text', 'loading'], [])
+		() -> h('div', ['file-preview', 'file-preview-text', 'loading'], [])
 		_ -> h(
-			'pre'
+			'div'
 			['file-preview', 'file-preview-text']
-			map(split(content, Newline), (line, i) => FileLine(i + 1, line))
+			[(
+				splitLines := split(content, Newline)
+
+				ha(
+					'div'
+					['file-preview-text-scroller']
+					{
+						style: {
+							height: string(len(splitLines) * 1.25 + 5) + 'em'
+						}
+					}
+					[
+						h('div', ['file-preview-line-nos']
+							map(splitLines, (_, n) => h('pre', ['file-preview-line-no'], [n + 1])))
+						h('pre', ['file-preview-line-texts'], [content])
+					]
+				)
+			)]
 		)
 	}
 }
