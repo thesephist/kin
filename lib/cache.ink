@@ -7,7 +7,7 @@ f := std.format
 reduce := std.reduce
 
 ` Max number of requests that will be cached `
-MaxSize := 24
+MaxSize := 50
 ` Number of seconds after which the request must be re-ferched `
 ExpirySecs := 60
 
