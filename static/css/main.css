@@ -44,7 +44,14 @@ a {
 }
 
 button {
+	padding: 0;
     font-size: 1em;
+}
+
+button,
+button:hover,
+button:active {
+	color: var(--primary-text);
 }
 
 pre,
@@ -78,6 +85,83 @@ textarea {
     display: flex;
     flex-direction: column;
     background: var(--secondary-bg);
+	padding: 8px;
+	box-sizing: border-box;
+}
+
+ul.file-tree-list {
+	padding-left: 0;
+	list-style: none;
+}
+
+ul.file-tree-list ul.file-tree-list {
+	padding-left: 12px;
+}
+
+li.file-tree-list-item {
+
+}
+
+.file-tree-node-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	cursor: pointer;
+	border-radius: 4px;
+}
+
+.file-tree-node-row:hover {
+	background: var(--hover-bg);
+}
+
+.file-tree-node-row:active,
+.file-tree-node-row.in-workspace {
+	background: var(--active-bg);
+}
+
+.file-tree-node-toggle {
+	flex-grow: 0;
+	flex-shrink: 0;
+	height: 1rem;
+	width: 1rem;
+	font-size: 12px;
+	display: inline-block;
+	color: var(--secondary-text);
+	box-sizing: content-box;
+	padding: 2px;
+	margin: 2px;
+	transform: rotate(-90deg);
+	background: 0;
+	border: transparent;
+	cursor: pointer;
+	border-radius: 4px;
+	transition: transform .2s;
+}
+
+.file-tree-node-toggle:hover {
+	background: var(--active-bg);
+}
+
+.file-tree-node-toggle.open {
+	transform: rotate(0deg);
+}
+
+.file-tree-node-name {
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	margin-left: calc(1em + 8px);
+	width: 0;
+	flex-grow: 1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	text-align: left;
+	line-height: 1.4em;
+}
+
+.file-tree-node-toggle + .file-tree-node-name {
+	margin: 0;
 }
 
 .file-panes {
@@ -119,6 +203,7 @@ textarea {
     height: 0;
     flex-grow: 1;
     overflow: auto;
+	-webkit-overflow-scrolling: auto;
     margin: 0;
     display: flex;
     flex-direction: column;

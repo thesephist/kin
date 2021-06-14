@@ -41,6 +41,17 @@ translateFileFromAPI := fileFromAPI => {
 	children: ()
 }
 
+fileInWorkspace? := file => (
+	allOpenFiles := flatten(map(State.panes, pane => pane.files))
+	(sub := i => i :: {
+		len(allOpenFiles) -> false
+		_ -> allOpenFiles.(i) :: {
+			file -> true
+			_ -> sub(i + 1)
+		}
+	})(0)
+)
+
 ` initial state `
 
 State := {
@@ -132,36 +143,60 @@ RepoPanel := (
 )
 
 FileTreeNode := file => h('div', ['file-tree-node'], [
-	file.type :: {
-		'dir' -> hae('button', ['file-tree-node-toggle'], {}, {
-			click: () => (
-				` TODO: toggle this node `
-				file.open? := ~(file.open?)
-				fetchFileChildren(file, render)
-				render()
-			)
-		}, [file.open? :: {true -> 'v', _ -> '>'}])
-		_ -> ()
-	}
-	hae('button', ['file-tree-node-file'], {}, {
-		click: () => file.type :: {
-			'file' -> (
-				` TODO: support multi-pane `
-				pane := State.panes.0 :: {
-					() -> State.panes := [{
-						active: file
-						files: [file]
-					}]
-					_ -> (
-						pane.files.len(pane.files) := file
-						pane.active := file
+	h(
+		'div'
+		[
+			'file-tree-node-row'
+			fileInWorkspace?(file) :: {
+				true -> 'in-workspace'
+				_ -> ''
+			}
+		]
+		[
+			file.type :: {
+				'dir' -> hae(
+					'button'
+					[
+						'file-tree-node-toggle'
+						file.open? :: {
+							true -> 'open'
+							_ -> 'closed'
+						}
+					]
+					{}
+					{
+						click: () => (
+							` TODO: toggle this node `
+							file.open? := ~(file.open?)
+							fetchFileChildren(file, render)
+							render()
+						)
+					}
+					['▼']
+				)
+				_ -> ()
+			}
+			hae('button', ['file-tree-node-name'], {}, {
+				click: () => file.type :: {
+					'file' -> (
+						` TODO: support multi-pane `
+						pane := State.panes.0 :: {
+							() -> State.panes := [{
+								active: file
+								files: [file]
+							}]
+							_ -> (
+								pane.files.len(pane.files) := file
+								pane.active := file
+							)
+						}
+						fetchFileContent(file, render)
+						render()
 					)
 				}
-				fetchFileContent(file, render)
-				render()
-			)
-		}
-	}, [file.name])
+			}, [file.name])
+		]
+	)
 	file.open? :: {
 		false -> ()
 		_ -> file.children :: {
