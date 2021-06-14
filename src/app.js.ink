@@ -81,7 +81,7 @@ fileTypeFromPath := path => true :: {
 State := {
 	theme: 'light'
 	userName: 'thesephist'
-	repoName: 'september'
+	repoName: 'kin'
 	` {
 		owner: {
 			username: string
@@ -244,7 +244,17 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 									pane.active := file
 								)
 							}
-							fetchFileContent(file, render)
+							fetchFileContent(file, () => (
+								render()
+								` syntax-highlight `
+								hasSuffix?(file.name, '.ink') :: {
+									true -> log('syntax highlight ink')
+									_ -> codePre := bind(document, 'querySelector')('.file-preview-line-texts') :: {
+										() -> ()
+										_ -> (hljs.highlightBlock)(codePre)
+									}
+								}
+							))
 							render()
 						)
 					}

@@ -4,6 +4,8 @@ body {
     font-family: sans-serif;
 }
 
+/* themes */
+
 body {
     background: var(--primary-bg);
     font-family: var(--sans);
@@ -20,9 +22,6 @@ body {
     --active-bg: #dcdfe4;
     --translucent: rgba(249, 250, 251, .8);
     --transparent: rgba(249, 250, 251, 0);
-
-    /* repl text colors */
-    --error: #da1111;
 }
 
 .dark {
@@ -34,9 +33,9 @@ body {
     --active-bg: #626569;
     --translucent: rgba(47, 52, 55, .8);
     --transparent: rgba(47, 52, 55, 0);
-
-    --error: #ff554c;
 }
+
+/* resets */
 
 a {
     color: var(--primary-text);
@@ -68,6 +67,14 @@ textarea {
     font-size: 1em;
     font-family: var(--sans);
 }
+
+/* highlight.js overrides */
+
+.hljs {
+	background: var(--primary-bg);
+}
+
+/* application styles */
 
 #root,
 .app {

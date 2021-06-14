@@ -8,6 +8,7 @@ run:
 build:
 	cat static/js/ink.js \
 		static/js/torus.min.js \
+		static/js/highlight.js \
 		> static/ink/vendor.js
 	september translate \
 		lib/stub.ink \
