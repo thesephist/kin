@@ -8,7 +8,20 @@ json := load('json')
 serJSON := json.ser
 deJSON := json.de
 
+` constants `
+
 Newline := char(10)
+MaxPathChars := 16
+
+` TODO: support Markdown previews `
+FileType := {
+	` cannot display `
+	Blob: ~1
+	` code `
+	Text: 0
+	` preview `
+	Image: 1
+}
 
 ` utilities `
 
@@ -51,6 +64,17 @@ fileInWorkspace? := file => (
 		}
 	})(0)
 )
+
+fileTypeFromPath := path => true :: {
+	hasSuffix?(path, '.jpg') -> FileType.Image
+	hasSuffix?(path, '.png') -> FileType.Image
+	hasSuffix?(path, '.gif') -> FileType.Image
+	hasSuffix?(path, '.bmp') -> FileType.Image
+
+	hasSuffix?(path, '.sqlite') -> FileType.Blob
+
+	_ -> FileType.Text
+}
 
 ` initial state `
 
@@ -166,7 +190,6 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 					{}
 					{
 						click: () => (
-							` TODO: toggle this node `
 							file.open? := ~(file.open?)
 							fetchFileChildren(file, render)
 							render()
@@ -178,21 +201,24 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 			}
 			hae('button', ['file-tree-node-name'], {}, {
 				click: () => file.type :: {
-					'file' -> (
-						` TODO: support multi-pane `
-						pane := State.panes.0 :: {
-							() -> State.panes := [{
-								active: file
-								files: [file]
-							}]
-							_ -> (
-								pane.files.len(pane.files) := file
-								pane.active := file
-							)
-						}
-						fetchFileContent(file, render)
-						render()
-					)
+					` TODO: support multi-pane `
+					'file' -> fileInWorkspace?(file) :: {
+						true -> render(State.panes.'0'.active := file)
+						_ -> (
+							pane := State.panes.0 :: {
+								() -> State.panes := [{
+									active: file
+									files: [file]
+								}]
+								_ -> (
+									pane.files.len(pane.files) := file
+									pane.active := file
+								)
+							}
+							fetchFileContent(file, render)
+							render()
+						)
+					}
 				}
 			}, [file.name])
 		]
@@ -218,7 +244,9 @@ Sidebar := () => h('div', ['sidebar'], [
 		ha('a', [], {href: '/'}, ['Ink codebase browser'])
 	])
 	RepoPanel()
-	FileTreeList(State.files)
+	h('div', ['file-tree-list-container'], [
+		FileTreeList(State.files)
+	])
 ])
 
 FileLine := (n, line) => h('code', ['file-line'], [
@@ -226,48 +254,76 @@ FileLine := (n, line) => h('code', ['file-line'], [
 	h('span', ['file-line-text'], [line])
 ])
 
-FilePane := pane => h('div', ['file-pane'], [
-	h('div', ['file-pane-header'], (
-		map(pane.files, file => h('div', ['file-pane-header'], [
-			h('div', ['file-pane-header-tab'], [
-				hae(
-					'button'
-					['file-pane-header-info']
-					{title: file.path}
-					{
-						click: () => render(pane.active := file)
-					}
-					[
-						h('span', ['file-pane-header-path'], [trimSuffix(file.path, file.name)])
-						h('span', ['file-pane-header-name'], [file.name])
-					]
-				)
-				hae('button', ['file-pane-close'], {}, {
-					click: () => (
-						pane.files := filter(pane.files, f => ~(f = file))
-						pane.files :: {
-							` if pane is empty, remove pane from panes `
-							[] -> State.panes := filter(State.panes, p => ~(p = pane))
-							` otherwise, set active pane file to something else `
-							_ -> pane.active :: {
-								` if current file was active, choose a different active file `
-								file -> pane.active := pane.files.0
-							}
-						}
-						render()
-					)
-				}, ['x'])
-			])
-		]))
-	))
-	content := pane.active.content :: {
-		() -> h('pre', ['file-pane-code', 'loading'], [])
+FilePreview := file => fileTypeFromPath(file.path) :: {
+	FileType.Blob -> h('div', ['file-preview', 'file-preview-blob'], [
+		'Can\'t preview this type of file'
+	])
+	FileType.Image -> h(
+		'div'
+		['file-preview', 'file-preview-image']
+		[ha('img', ['file-preview-image-content'], {src: file.download}, [])]
+	)
+	FileType.Text -> content := file.content :: {
+		() -> h('pre', ['file-preview', 'file-preview-text', 'loading'], [])
 		_ -> h(
 			'pre'
-			['file-pane-code']
+			['file-preview', 'file-preview-text']
 			map(split(content, Newline), (line, i) => FileLine(i + 1, line))
 		)
 	}
+}
+
+FilePane := pane => h('div', ['file-pane'], [
+	h('div', ['file-pane-header'], (
+		map(pane.files, file => h('div', ['file-pane-header'], [
+			h(
+				'div'
+				[
+					'file-pane-header-tab'
+					pane.active :: {
+						file -> 'active'
+						_ -> ''
+					}
+				]
+				[
+					hae(
+						'button'
+						['file-pane-header-info']
+						{title: file.path}
+						{
+							click: () => render(pane.active := file)
+						}
+						[
+							h('span', ['file-pane-header-path'], [(
+								path := trimSuffix(file.path, file.name)
+								len(path) < MaxPathChars :: {
+									true -> path
+									_ -> '...' + slice(path, len(path) - MaxPathChars, len(path))
+								}
+							)])
+							h('span', ['file-pane-header-name'], [file.name])
+						]
+					)
+					hae('button', ['file-pane-close'], {}, {
+						click: () => (
+							pane.files := filter(pane.files, f => ~(f = file))
+							pane.files :: {
+								` if pane is empty, remove pane from panes `
+								[] -> State.panes := filter(State.panes, p => ~(p = pane))
+								` otherwise, set active pane file to something else `
+								_ -> pane.active :: {
+									` if current file was active, choose a different active file `
+									file -> pane.active := pane.files.0
+								}
+							}
+							render()
+						)
+					}, ['×'])
+				]
+			)
+		]))
+	))
+	FilePreview(pane.active)
 ])
 
 FilePanes := () => h(
@@ -344,4 +400,6 @@ render := () => update(h(
 
 refreshRepo()
 render()
+
+` TODO: routing `
 
