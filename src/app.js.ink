@@ -8,6 +8,7 @@ f := std.format
 
 Newline := char(10)
 MaxPathChars := 16
+MaxFilePreviewSize := 1000000
 
 FileType := {
 	` cannot display `
@@ -375,7 +376,10 @@ Sidebar := () => State.sidebar? :: {
 		])
 		h('p', ['sidebar-credits'], [
 			hae('a', [], {href: '/thesephist/kin'}, {
-				click: () => goTo('/thesephist/kin')
+				click: evt => (
+					bind(evt, 'preventDefault')()
+					goTo('/thesephist/kin')
+				)
 			}, ['About this project...'])
 		])
 	])
@@ -420,7 +424,7 @@ FilePreview := (
 						}
 						[
 							h('pre', ['file-preview-line-nos']
-								[cat(map(range(1, lineCount + 1, 1), string), Newline)])
+								[cat(map(range(1, lineCount + 2, 1), string), Newline)])
 							(
 								el := bind(document, 'createElement')('pre')
 								el.className := 'file-preview-line-texts'
@@ -618,18 +622,24 @@ fetchFileChildren := (file, cb) => file.children :: {
 }
 
 fetchFileContent := (file, cb) => file.content :: {
-	() -> (
-		resp := fetch(file.download)
-		text := bind(resp, 'then')(resp => bind(resp, 'text')())
-		bind(text, 'then')(text => (
-			file.content := (fileTypeFromPath(file.path) :: {
-				FileType.Text -> highlightProg(file.name, text)
-				FileType.Markdown -> transform(text)
-				_ -> text
-			})
+	() -> file.size > MaxFilePreviewSize :: {
+		true -> (
+			file.content := 'file too big for preview'
 			cb()
-		))
-	)
+		)
+		_ -> (
+			resp := fetch(file.download)
+			text := bind(resp, 'then')(resp => bind(resp, 'text')())
+			bind(text, 'then')(text => (
+				file.content := (fileTypeFromPath(file.path) :: {
+					FileType.Text -> highlightProg(file.name, text)
+					FileType.Markdown -> transform(text)
+					_ -> text
+				})
+				cb()
+			))
+		)
+	}
 	_ -> cb()
 }
 

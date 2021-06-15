@@ -50,6 +50,7 @@ translateFileFromAPI := fileFromAPI => {
 	name: fileFromAPI.name
 	path: fileFromAPI.path
 	type: fileFromAPI.type
+	size: fileFromAPI.size
 	download: fileFromAPI.'download_url'
 	content: ()
 	children: ()
