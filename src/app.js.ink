@@ -25,7 +25,7 @@ FileType := {
 
 mobile? := () => ~(window.innerWidth > 700)
 
-fetchAPI := (url, data, withRespJSON) => (
+fetchAPI := (url, data, description, withRespJSON) => (
 	resp := fetch(url, data)
 	bind(resp, 'then')(resp => resp.status :: {
 		200 -> (
@@ -33,8 +33,7 @@ fetchAPI := (url, data, withRespJSON) => (
 			bind(json, 'then')(data => withRespJSON(data))
 		)
 		_ -> (
-			` TODO: improve this alert UI `
-			alert('Couldn\'t fetch the data. Please try again.')
+			showAlert(f('Could not retrieve {{ 0 }}. Please try again.', [description]))
 			withRespJSON(())
 		)
 	})
@@ -43,12 +42,14 @@ fetchAPI := (url, data, withRespJSON) => (
 fetchRepo := (userName, repoName, withRepo) => fetchAPI(
 	f('/repo/{{ 0 }}/{{ 1 }}', [userName, repoName])
 	{}
+	'repository metadata'
 	data => withRepo(data)
 )
 
 fetchContents := (userName, repoName, path, withContents) => fetchAPI(
 	f('/repo/{{ 0 }}/{{ 1 }}/files{{ 2 }}', [userName, repoName, path])
 	{}
+	'repository files'
 	data => withContents(data)
 )
 
@@ -154,6 +155,7 @@ State := {
 	userName: 'thesephist'
 	repoName: 'september'
 	sidebar?: true
+	alerts: []
 	` {
 		owner: {
 			username: string
@@ -507,6 +509,12 @@ FilePanes := () => h(
 	map(State.panes, (pane, i) => FilePane(pane, i))
 )
 
+Alert := message => h('div', ['alert'], [
+	message
+])
+
+Alerts := () => h('div', ['alerts'], map(State.alerts, Alert))
+
 ` globals and callbacks `
 
 root := bind(document, 'querySelector')('#root')
@@ -589,12 +597,20 @@ fetchFileContent := (file, cb) => file.content :: {
 	_ -> cb()
 }
 
+showAlert := msg => (
+	render(State.alerts.len(State.alerts) := msg)
+	wait(4, () => render(
+		State.alerts := slice(State.alerts, 1, len(State.alerts))
+	))
+)
+
 render := () => update(h(
 	'div'
 	['app']
 	[
 		Sidebar()
 		FilePanes()
+		Alerts()
 	]
 ))
 

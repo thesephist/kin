@@ -200,13 +200,13 @@ nav a.home-link:hover {
 }
 
 .sidebar-credits {
-	margin: 0;
-	margin-top: 8px;
+    margin: 0;
+    margin-top: 8px;
 }
 
 .sidebar-credits a {
-	color: var(--secondary-text);
-	font-size: 14px;
+    color: var(--secondary-text);
+    font-size: 14px;
 }
 
 .repo-panel .repo-panel-header {
@@ -677,6 +677,37 @@ li.file-tree-list-item {
 
 .file-preview-markdown-container input[type="checkbox"] {
     pointer-events: none;
+}
+
+.alerts {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 360px;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+@keyframes slide-in {
+    0% {
+        transform: translateX(calc(100% + 12px));
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.alert {
+    background: #e6525e;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, .3);
+    color: var(--primary-bg);
+    margin: 8px;
+    line-height: 1.5em;
+    animation: slide-in .5s cubic-bezier(.14,.43,.31,1.03);
 }
 
 /* mobile */
