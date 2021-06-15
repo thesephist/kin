@@ -6,6 +6,7 @@ f := std.format
 
 ` constants `
 
+Mobile? := ~(window.innerWidth > 700)
 Newline := char(10)
 MaxPathChars := 16
 
@@ -105,6 +106,7 @@ State := {
 	theme: 'light'
 	userName: 'thesephist'
 	repoName: 'september'
+	sidebar?: true
 	` {
 		owner: {
 			username: string
@@ -273,6 +275,11 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 								)
 							}
 							fetchFileContent(file, render)
+
+							Mobile? :: {
+								true -> State.sidebar? := false
+							}
+
 							render()
 						)
 					}
@@ -295,26 +302,34 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 ])
 
 FileTreeList := files => h('ul', ['file-tree-list'], (
-	sortedFiles := sortBy(clone(files), file => file.name)
+	sortedFiles := sortBy(files, file => file.name)
 	map(sortedFiles, file => h('li', ['file-tree-list-item'], [
 		FileTreeNode(file)
 	]))
 ))
 
-Sidebar := () => h('div', ['sidebar'], [
-	h('nav', [], [
-		hae('a', ['home-link'], {href: '/'}, {
-			click: evt => (
-				bind(evt, 'preventDefault')()
-				goTo('/')
-			)
-		}, ['Ink codebase browser'])
+Sidebar := () => State.sidebar? :: {
+	false -> hae('button', ['sidebar-show-button'], {}, {
+		click: () => render(State.sidebar? := true)
+	}, ['»'])
+	_ -> h('div', ['sidebar'], [
+		h('nav', [], [
+			hae('button', ['sidebar-hide-button'], {}, {
+				click: () => render(State.sidebar? := false)
+			}, ['«'])
+			hae('a', ['home-link'], {href: '/'}, {
+				click: evt => (
+					bind(evt, 'preventDefault')()
+					goTo('/')
+				)
+			}, ['Ink codebase browser'])
+		])
+		RepoPanel()
+		h('div', ['file-tree-list-container'], [
+			FileTreeList(State.files)
+		])
 	])
-	RepoPanel()
-	h('div', ['file-tree-list-container'], [
-		FileTreeList(State.files)
-	])
-])
+}
 
 FilePreview := file => fileTypeFromPath(file.path) :: {
 	FileType.Blob -> h('div', ['file-preview', 'file-preview-blob'], [
@@ -363,7 +378,7 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 
 FilePane := pane => h('div', ['file-pane'], [
 	h('div', ['file-pane-header'], (
-		map(pane.files, file => h('div', ['file-pane-header'], [
+		map(pane.files, file => h('div', ['file-pane-header-tab-container'], [
 			h(
 				'div'
 				[
@@ -500,6 +515,8 @@ bind(router, 'addHandler')(
 				State.userName := params.userName
 				State.repoName := params.repoName
 				refreshRepo()
+
+				document.title := f('{{ userName }}/{{ repoName }} | Ink Codebase Browser', State)
 				render()
 			)
 			'repoSlash' -> goTo('/' + params.userName + '/' + params.repoName)

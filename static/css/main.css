@@ -151,9 +151,41 @@ textarea {
     box-sizing: border-box;
 }
 
+.sidebar-show-button,
+.sidebar-hide-button {
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    color: var(--primary-text);
+    height: 28px;
+    width: 28px;
+    font-size: 20px;
+    line-height: 28px;
+    border-radius: 4px;
+    transition: background .2s;
+}
+
+.sidebar-show-button:hover,
+.sidebar-hide-button:hover {
+    background: var(--active-bg);
+}
+
+.sidebar-show-button {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+}
+
+.sidebar-hide-button {
+    margin-right: 8px;
+}
+
 nav {
     margin-top: 8px;
     margin-bottom: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 nav a.home-link {
@@ -373,10 +405,23 @@ li.file-tree-list-item {
     flex-grow: 1;
     display: flex;
     flex-direction: row;
+    align-items: center;
+    justify-content: center;
     height: 100%;
 }
 
+.file-panes:empty::after {
+    content: 'Open a file from the sidebar to explore';
+    display: block;
+    width: 80%;
+    text-align: center;
+    max-width: 300px;
+    font-style: italic;
+    color: var(--secondary-text);
+}
+
 .file-pane {
+    background: var(--hover-bg);
     border-right: 2px solid var(--active-bg);
     height: 100%;
     width: 0;
@@ -398,6 +443,10 @@ li.file-tree-list-item {
     justify-content: flex-start;
     background: var(--hover-bg);
     overflow-x: auto;
+}
+
+.sidebar-show-button + .file-panes .file-pane:first-child .file-pane-header {
+    margin-left: 36px;
 }
 
 .file-pane .file-pane-header-path {
@@ -521,5 +570,17 @@ li.file-tree-list-item {
     height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+}
+
+/* mobile */
+
+@media only screen and (max-width: 700px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        box-shadow: 0 0 0 100vw rgba(0, 0, 0, .35);
+    }
 }
 

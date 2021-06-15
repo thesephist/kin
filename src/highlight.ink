@@ -81,10 +81,8 @@ highlightInkProg := prog => (
 	})
 	pcs := map(
 		spans
-		span => f('<span class="{{ 0 }}">{{ 1 }}</span>'
-			[span.class, slice(prog, span.start, span.end)])
-		span => '<span class="' + span.class + '">' + slice(prog, span.start, span.end) +
-			'</span'
+		span => '<span class="' + span.class + '">' +
+			escapeHTML(slice(prog, span.start, span.end)) + '</span>'
 	)
 	cat(pcs, '')
 )
