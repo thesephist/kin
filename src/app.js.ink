@@ -155,10 +155,10 @@ RepoPanel := (
 	}
 
 	submit := () => (
-		State.userName := state.userName
-		State.repoName := state.repoName
 		state.editing? := false
-		refreshRepo()
+		render()
+
+		goTo('/' + state.userName + '/' + state.repoName)
 	)
 
 	handleKeydown := evt => evt.key :: {
@@ -223,9 +223,7 @@ RepoPanel := (
 			])
 		}
 		repo := State.repo :: {
-			() -> h('div', ['repo-info-panel', 'empty'], [
-				'Loading repo...'
-			])
+			() -> h('div', ['repo-info-panel', 'loading'], [])
 			_ -> h('div', ['repo-info-panel'], [
 				h('div', ['repo-info-description'], [repo.description])
 				h('div', ['repo-info-homepage'], [Link(repo.homepage, repo.homepage)])
@@ -300,7 +298,7 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 	file.open? :: {
 		false -> ()
 		_ -> file.children :: {
-			() -> 'Loading files...'
+			() -> h('div', ['file-tree-node-loading', 'loading'], [])
 			_ -> FileTreeList(file.children)
 		}
 	}
@@ -315,7 +313,12 @@ FileTreeList := files => h('ul', ['file-tree-list'], (
 
 Sidebar := () => h('div', ['sidebar'], [
 	h('nav', [], [
-		ha('a', ['home-link'], {href: '/'}, ['Ink codebase browser'])
+		hae('a', ['home-link'], {href: '/'}, {
+			click: evt => (
+				bind(evt, 'preventDefault')()
+				goTo('/')
+			)
+		}, ['Ink codebase browser'])
 	])
 	RepoPanel()
 	h('div', ['file-tree-list-container'], [
@@ -333,7 +336,9 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 		[ha('img', ['file-preview-image-content'], {src: file.download}, [])]
 	)
 	FileType.Text -> content := file.content :: {
-		() -> h('div', ['file-preview', 'file-preview-text', 'loading'], [])
+		() -> h('div', ['file-preview', 'file-preview-text'], [
+			h('div', ['file-preview-loading', 'loading'], [])
+		])
 		_ -> h(
 			'div'
 			['file-preview', 'file-preview-text']
@@ -493,6 +498,35 @@ render := () => update(h(
 	]
 ))
 
-refreshRepo()
-render()
+` router with Torus.Router `
+
+router := jsnew(Torus.Router, [{
+	githubSlash: str('/https://github.com/:userName/:repoName/')
+	github: str('/https://github.com/:userName/:repoName')
+	repoSlash: str('/:userName/:repoName/')
+	repo: str('/:userName/:repoName')
+	home: str('/')
+}])
+
+goTo := bind(router, 'go')
+
+bind(router, 'addHandler')(
+	routeInfo => (
+		name := routeInfo.0
+		params := routeInfo.1
+
+		name :: {
+			'repo' -> (
+				State.userName := params.userName
+				State.repoName := params.repoName
+				refreshRepo()
+				render()
+			)
+			'repoSlash' -> goTo('/' + params.userName + '/' + params.repoName)
+			'github' -> goTo('/' + params.userName + '/' + params.repoName)
+			'githubSlash' -> goTo('/' + params.userName + '/' + params.repoName)
+			_ -> goTo('/thesephist/ink')
+		}
+	)
+)
 
