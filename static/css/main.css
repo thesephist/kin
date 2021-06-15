@@ -71,8 +71,25 @@ textarea {
 /* highlight.js overrides */
 
 .hljs {
+	color: var(--primary-text);
 	background: var(--primary-bg);
 }
+
+.hljs-comment { 
+	font-style: italic;
+	color: var(--secondary-text);
+}
+.hljs-number,
+.hljs-literal {
+	color: #af57d2;
+}
+.hljs-title.function_ { color: #3563cd; }
+.hljs-operator { color: #e0281a; }
+.hljs-separator {
+	/* ink-specific token type */
+	color: #a6a6a6;
+}
+.hljs-string { color: #13915e; }
 
 /* application styles */
 
@@ -225,9 +242,11 @@ nav a.home-link:hover {
     height: 0;
     flex-grow: 1;
     overflow-y: auto;
+	margin-top: 24px;
 }
 
 ul.file-tree-list {
+	margin: 0;
 	padding-left: 0;
 	list-style: none;
 }
@@ -393,6 +412,8 @@ li.file-tree-list-item {
     width: 100%;
     flex-grow: 1;
     margin: 0;
+	color: var(--primary-text);
+	background: var(--primary-bg);
 }
 
 .file-preview.file-preview-image {

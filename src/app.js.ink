@@ -4,10 +4,6 @@ std := load('std')
 log := std.log
 f := std.format
 
-json := load('json')
-serJSON := json.ser
-deJSON := json.de
-
 ` constants `
 
 Newline := char(10)
@@ -76,12 +72,19 @@ fileTypeFromPath := path => true :: {
 	_ -> FileType.Text
 }
 
+highlightInkBlock := blockEl => (
+	` NOTE: we assume the <pre> contains exactly and only text source as a
+	single TextNode, and nothing else. `
+	prog := blockEl.textContent
+	blockEl.innerHTML := highlightInkProg(prog)
+)
+
 ` initial state `
 
 State := {
 	theme: 'light'
 	userName: 'thesephist'
-	repoName: 'kin'
+	repoName: 'september'
 	` {
 		owner: {
 			username: string
@@ -247,11 +250,11 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 							fetchFileContent(file, () => (
 								render()
 								` syntax-highlight `
-								hasSuffix?(file.name, '.ink') :: {
-									true -> log('syntax highlight ink')
-									_ -> codePre := bind(document, 'querySelector')('.file-preview-line-texts') :: {
-										() -> ()
-										_ -> (hljs.highlightBlock)(codePre)
+								codeBlock := bind(document, 'querySelector')('.file-preview-line-texts') :: {
+									() -> ()
+									_ -> hasSuffix?(file.name, '.ink') :: {
+										true -> highlightInkBlock(codeBlock)
+										_ -> (hljs.highlightElement)(codeBlock)
 									}
 								}
 							))
@@ -321,7 +324,20 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 					[
 						h('div', ['file-preview-line-nos']
 							map(splitLines, (_, n) => h('pre', ['file-preview-line-no'], [n + 1])))
-						h('pre', ['file-preview-line-texts'], [content])
+						h(
+							'pre'
+							[
+								'file-preview-line-texts'
+								(
+									` try to pull out the language using file ext `
+									dotParts := split(file.path, '.') :: {
+										[_] -> ''
+										_ -> 'language-' + dotParts.(len(dotParts) - 1)
+									}
+								)
+							]
+							[content]
+						)
 					]
 				)
 			)]
