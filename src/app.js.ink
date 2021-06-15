@@ -40,16 +40,6 @@ fetchContents := (userName, repoName, path, withContents) => fetchAPI(
 	data => withContents(data)
 )
 
-translateFileFromAPI := fileFromAPI => {
-	open?: false
-	name: fileFromAPI.name
-	path: fileFromAPI.path
-	type: fileFromAPI.type
-	download: fileFromAPI.'download_url'
-	content: ()
-	children: ()
-}
-
 fileInWorkspace? := file => (
 	allOpenFiles := flatten(map(State.panes, pane => pane.files))
 	(sub := i => i :: {
@@ -442,22 +432,12 @@ refreshRepo := () => (
 	State.panes := []
 	render()
 
-	` TODO: at some point, this translation should move to backend `
 	fetchRepo(State.userName, State.repoName, repo => (
-		State.repo := {
-			owner: {
-				username: repo.owner.login
-				avatar: repo.owner.'avatar_url'
-				url: repo.owner.'html_url'
-			}
-			description: repo.description
-			homepage: repo.homepage
-			language: repo.language
-		}
+		State.repo := repo
 		render()
 	))
 	fetchContents(State.userName, State.repoName, '/', contents => (
-		State.files := map(contents, translateFileFromAPI)
+		State.files := map(contents, file => file.open? := false)
 		render()
 	))
 )
@@ -466,7 +446,7 @@ fetchFileChildren := (file, cb) => file.children :: {
 	() -> (
 		` must mutate file in-place, return value does not matter `
 		fetchContents(State.userName, State.repoName, '/' + file.path, contents => (
-			file.children := map(contents, translateFileFromAPI)
+			file.children := map(contents, file => file.open? := false)
 			cb()
 		))
 	)

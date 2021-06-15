@@ -3,6 +3,7 @@ json := load('../vendor/json')
 
 log := std.log
 f := std.format
+map := std.map
 each := std.each
 readFile := std.readFile
 serJSON := json.ser
@@ -35,6 +36,15 @@ serveStatic := path => (req, end) => req.method :: {
 
 addRoute := server.addRoute
 
+translateFileFromAPI := fileFromAPI => {
+	name: fileFromAPI.name
+	path: fileFromAPI.path
+	type: fileFromAPI.type
+	download: fileFromAPI.'download_url'
+	content: ()
+	children: ()
+}
+
 ` directory traversal paths `
 addRoute('/repo/:userName/:repoName/files/*pathName', params => (req, end) => req.method :: {
 	'GET' -> getContents(
@@ -42,13 +52,11 @@ addRoute('/repo/:userName/:repoName/files/*pathName', params => (req, end) => re
 		'/' + params.pathName
 		contents => contents :: {
 			() -> end(NotFound)
-			_ -> (
-				end({
-					status: 200
-					headers: {'Content-Type': 'text/plain'}
-					body: serJSON(contents)
-				})
-			)
+			_ -> end({
+				status: 200
+				headers: {'Content-Type': 'text/plain'}
+				body: serJSON(map(contents, translateFileFromAPI))
+			})
 		}
 	)
 	_ -> end(MethodNotAllowed)
@@ -63,7 +71,7 @@ addRoute('/repo/:userName/:repoName/files', params => (req, end) => req.method :
 				end({
 					status: 200
 					headers: {'Content-Type': 'text/plain'}
-					body: serJSON(contents)
+					body: serJSON(map(contents, translateFileFromAPI))
 				})
 			)
 		}
@@ -75,13 +83,20 @@ addRoute('/repo/:userName/:repoName/files', params => (req, end) => req.method :
 addRoute('/repo/:userName/:repoName', params => (req, end) => req.method :: {
 	'GET' -> getRepo(params.userName + '/' + params.repoName, repo => repo :: {
 		() -> end(NotFound)
-		_ -> (
-			end({
-				status: 200
-				headers: {'Content-Type': 'application/json'}
-				body: serJSON(repo)
+		_ -> end({
+			status: 200
+			headers: {'Content-Type': 'application/json'}
+			body: serJSON({
+				owner: {
+					username: repo.owner.login
+					avatar: repo.owner.'avatar_url'
+					url: repo.owner.'html_url'
+				}
+				description: repo.description
+				homepage: repo.homepage
+				language: repo.language
 			})
-		)
+		})
 	})
 	_ -> end(MethodNotAllowed)
 })
