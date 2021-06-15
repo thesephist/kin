@@ -20,7 +20,7 @@ The codebase browser solves all of these problems through the main interface and
 
 The codebase browser uses [September](https://github.com/thesephist/september)'s Ink syntax highlighting algorithm to syntax highlight Ink programs. The algorithm is compiled to JavaScript so it can run fully in the browser.
 
-![Ink codebase browser with two panes of Ink source code open](https://github.com/thesephist/kin/raw/mainstatic/img/kin-ink-project.png)
+![Ink codebase browser with two panes of Ink source code open](https://github.com/thesephist/kin/raw/main/static/img/kin-ink-project.png)
 
 ### Rich file previews
 
@@ -31,11 +31,11 @@ The codebase browser recognizes four different types of files
 3. Text files, which are displayed with line numbers and syntax highlighting, if the language can be detected
 4. Markdown files, which are rendered as their compiled versions with [Merlot](https://github.com/thesephist/merlot)'s Markdown engine (note that Merlot isn't fully compliant with any common Markdown spec -- it mostly just has the subset that I use, though it's being improved.)
 
-![Ink codebase browser viewing a rendered Markdown file](https://github.com/thesephist/kin/raw/mainstatic/img/kin-markdown-project.png)
+![Ink codebase browser viewing a rendered Markdown file](https://github.com/thesephist/kin/raw/main/static/img/kin-markdown-project.png)
 
 You can see an example Markdown file preview above, next to an Ink source file that's been syntax highlighted. Below, we have a TypeScript React file next to an image preview.
 
-![Ink codebase browser viewing an image preview](https://github.com/thesephist/kin/raw/mainstatic/img/kin-nextjs-project.png)
+![Ink codebase browser viewing an image preview](https://github.com/thesephist/kin/raw/main/static/img/kin-nextjs-project.png)
 
 File previews require the full file to be fetched from GitHub and potentially parsed locally, so files larger than 1MB are not rendered.
 
@@ -51,7 +51,7 @@ The Ink codebase browser has a less obvious second feature, which is what I call
 
 I frequently want to show some bit of Ink program online, on one of my technical blogs or linked from a comment or tweet, but simply linking to a file or a GitHub preview is suboptimal because Ink has no syntax highlighting support in most places. Given that this project already had a way to syntax highlight Ink code for the web, I chose to repurpose this code to make a service that acts as an HTTP proxy that highlights any Ink code passing through it.
 
-![A demo page showing embedded syntax highlighted Ink source files](https://github.com/thesephist/kin/raw/mainstatic/img/kin-embed-demo.png)
+![A demo page showing embedded syntax highlighted Ink source files](https://github.com/thesephist/kin/raw/main/static/img/kin-embed-demo.png)
 
 Using this "proxy" service, I can embed links to syntax-highlighted versions of Ink source files that live on my GitHub repositories. For example, above is a sample document that takes advantage of this. You can see a live demo at [code.dotink.co/demo](https://code.dotink.co/demo).
 
