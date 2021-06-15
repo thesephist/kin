@@ -266,9 +266,18 @@ RepoPanel := (
 		repo := State.repo :: {
 			() -> h('div', ['repo-info-panel', 'loading'], [])
 			_ -> h('div', ['repo-info-panel'], [
-				h('div', ['repo-info-description'], [repo.description])
-				h('div', ['repo-info-homepage'], [Link(repo.homepage, repo.homepage)])
-				h('div', ['repo-info-language'], [repo.language])
+				repo.description :: {
+					() -> ()
+					_ -> h('div', ['repo-info-description'], [repo.description])
+				}
+				repo.homepage :: {
+					() -> ()
+					_ -> h('div', ['repo-info-homepage'], [Link(repo.homepage, repo.homepage)])
+				}
+				repo.language :: {
+					() -> ()
+					_ -> h('div', ['repo-info-language'], [repo.language])
+				}
 			])
 		}
 	])
