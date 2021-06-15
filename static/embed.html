@@ -2,18 +2,31 @@
 
 <head>
     <meta charset="utf-8">
-	<title>{{ fileName }}</title>
+    <title>{{ fileName }}</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet" href="/static/css/highlight.css">
     <link rel="stylesheet" href="/static/css/main.css">
-	<link rel="preconnect" href="https://fonts.gstatic.com">
-	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Facebook Open Graph tags -->
+    <meta property="og:url" content="https://code.dotink.co" />
+    <meta property="og:title" content="{{ fileName }}" />
+    <meta property="og:description" content="View {{ fileName }} on Ink codebase browser" />
+    <meta property="og:image" content="https://code.dotink.co/static/img/kin-ink-project.png" />
+
+    <!-- Twitter Card (large image card) tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:creator" content="@thesephist">
+    <meta name="twitter:title" content="{{ fileName }}">
+    <meta name="twitter:description" content="View {{ fileName }} on Ink codebase browser" />
+    <meta name="twitter:image" content="https://code.dotink.co/static/img/kin-ink-project.png" />
 </head>
 
 <body>
-	<div class="embed-preview">
-		<pre class="embed-preview-line-nos">{{ lineNos }}</pre>
-		<pre class="embed-preview-texts">{{ prog }}</pre>
-	</div>
+    <div class="embed-preview">
+        <pre class="embed-preview-line-nos">{{ lineNos }}</pre>
+        <pre class="embed-preview-texts">{{ prog }}</pre>
+    </div>
 </body>
 
