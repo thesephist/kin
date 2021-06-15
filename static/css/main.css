@@ -299,6 +299,7 @@ nav a.home-link:hover {
 .repo-info-panel .repo-info-description {
     line-height: 1.5em;
     margin-bottom: 8px;
+    word-break: break-word;
 }
 
 .repo-info-panel .repo-info-homepage,

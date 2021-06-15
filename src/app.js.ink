@@ -117,6 +117,8 @@ highlightProg := (fileName, content) => (
 			` Klisp is a lisp flavor written in Ink. It's syntactically closest
 			to scheme, which is in our language package. `
 			[_, 'klisp'] -> 'scheme'
+			[_, 'cljs'] -> 'clj'
+			[_, 'edn'] -> 'clj'
 			[_] -> 'unknown'
 			_ -> dotParts.(len(dotParts) - 1)
 		}
