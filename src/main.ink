@@ -27,6 +27,7 @@ highlightInkProg := highlight.highlightInkProg
 
 Port := 9870
 Newline := char(10)
+MaxProxyFile := 500000
 
 server := (http.new)()
 NotFound := {status: 404, body: 'file not found'}
@@ -126,21 +127,27 @@ addRoute('/embed/*githubURL', params => (request, end) => request.method :: {
 					headers: {'Content-Type': 'text/plain'}
 					body: evt.message
 				})
-				_ -> end({
-					status: 200
-					headers: {'Content-Type': 'text/html'}
-					body: f(file, {
-						fileName: params.githubURL
-						lineNos: cat(map(
-							range(1, len(split(evt.data.body, Newline)) + 1, 1)
-							string
-						), Newline)
-						prog: hasSuffix?(params.githubURL, '.ink') :: {
-							true -> highlightInkProg(evt.data.body)
-							_ -> evt.data.body
-						}
+				_ -> (
+					fileToRender := (len(evt.data.body) > MaxProxyFile :: {
+						true -> 'file too big to render'
+						_ -> evt.data.body
 					})
-				})
+					end({
+						status: 200
+						headers: {'Content-Type': 'text/html'}
+						body: f(file, {
+							fileName: params.githubURL
+							lineNos: cat(map(
+								range(1, len(split(fileToRender, Newline)) + 1, 1)
+								string
+							), Newline)
+							prog: hasSuffix?(params.githubURL, '.ink') :: {
+								true -> highlightInkProg(fileToRender)
+								_ -> fileToRender
+							}
+						})
+					})
+				)
 			})
 			'error' -> end({
 				status: 500
