@@ -362,13 +362,13 @@ Sidebar := () => State.sidebar? :: {
 }
 
 FilePreview := (
-	` TODO: cache interacts poorly with split panes of Markdown files `
-	mdCache := {
-		lastHTML: ''
-		lastRender: ()
-	}
+	` mutating the DOM to render Markdown from an HTML string (as Merlot's
+	Markdown engine does) is expensive, so we cache fully rendered HTML
+	elements here. There is a cache per pane to allow one Markdown document to
+	be displayed in multiple panes. `
+	mdRenderCaches := []
 
-	file => fileTypeFromPath(file.path) :: {
+	(file, paneIndex) => fileTypeFromPath(file.path) :: {
 		FileType.Blob -> h('div', ['file-preview', 'file-preview-blob'], [
 			'Can\'t preview this type of file'
 		])
@@ -418,18 +418,28 @@ FilePreview := (
 			_ -> h(
 				'div'
 				['file-preview', 'file-preview-markdown']
-				[mdCache.lastHTML :: {
-					content -> mdCache.lastRender
-					_ -> (
-						previewEl := bind(document, 'createElement')('div')
-						previewEl.className := 'file-preview-markdown-container'
-						previewEl.innerHTML := content
-						mdCache.lastHTML := content
-						mdCache.lastRender := previewEl
-						previewEl
-					)
-				}
-				]
+				[(
+					cacheEntry := (entry := mdRenderCaches.(paneIndex) :: {
+						() -> (
+							entry := {content: '', el: 9}
+							mdRenderCaches.(paneIndex) := entry
+							entry
+						)
+						_ -> entry
+					})
+
+					cacheEntry.content :: {
+						content -> cacheEntry.el
+						_ -> (
+							previewEl := bind(document, 'createElement')('div')
+							previewEl.className := 'file-preview-markdown-container'
+							previewEl.innerHTML := content
+							cacheEntry.content := content
+							cacheEntry.el := previewEl
+							previewEl
+						)
+					}
+				)]
 			)
 		}
 	}
@@ -488,7 +498,7 @@ FilePane := (pane, paneIndex) => h('div', ['file-pane'], [
 			]
 		)
 	])))
-	FilePreview(pane.active)
+	FilePreview(pane.active, paneIndex)
 ])
 
 FilePanes := () => h(
