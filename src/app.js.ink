@@ -357,6 +357,7 @@ Sidebar := () => State.sidebar? :: {
 }
 
 FilePreview := (
+	` TODO: cache interacts poorly with split panes of Markdown files `
 	mdCache := {
 		lastHTML: ''
 		lastRender: ()

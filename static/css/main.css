@@ -432,6 +432,7 @@ li.file-tree-list-item {
 
 .file-pane:last-child {
     border-right: 0;
+    border-bottom: 0;
 }
 
 .file-pane .file-pane-header {
@@ -566,8 +567,8 @@ li.file-tree-list-item {
 }
 
 .embed-preview {
-	display: flex;
-	flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 
 .embed-preview-line-nos,
@@ -593,19 +594,21 @@ li.file-tree-list-item {
 }
 
 .file-preview-markdown .file-preview-markdown-container {
-	overflow-y: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: auto;
     height: 100%;
+    width: calc(100% - 32px);
     max-width: 760px;
     margin: 0 auto;
     line-height: 1.5em;
 }
 
 .file-preview-markdown .file-preview-markdown-container > :first-child {
-	margin-top: 3rem;
+    margin-top: 3rem;
 }
 
 .file-preview-markdown .file-preview-markdown-container > :last-child {
-	margin-bottom: 6rem;
+    margin-bottom: 6rem;
 }
 
 /* Markdown styling, taken from thesephist/merlot */
@@ -659,7 +662,7 @@ li.file-tree-list-item {
 }
 
 .file-preview-markdown-container input[type="checkbox"] {
-	pointer-events: none;
+    pointer-events: none;
 }
 
 /* mobile */
@@ -671,6 +674,15 @@ li.file-tree-list-item {
         left: 0;
         bottom: 0;
         box-shadow: 0 0 0 100vw rgba(0, 0, 0, .35);
+    }
+    .file-panes {
+        flex-direction: column;
+    }
+    .file-pane {
+        border-right: 0;
+        border-bottom: 1px solid var(--secondary-text);
+        width: 100%;
+        height: 0;
     }
 }
 
