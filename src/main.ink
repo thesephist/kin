@@ -1,11 +1,17 @@
 std := load('../vendor/std')
+str := load('../vendor/str')
 json := load('../vendor/json')
 
 log := std.log
 f := std.format
+range := std.range
+cat := std.cat
 map := std.map
 each := std.each
 readFile := std.readFile
+split := str.split
+replace := str.replace
+hasSuffix? := str.hasSuffix?
 serJSON := json.ser
 deJSON := json.de
 
@@ -16,7 +22,11 @@ github := load('../lib/github')
 getRepo := github.getRepo
 getContents := github.getContents
 
+highlight := load('highlight')
+highlightInkProg := highlight.highlightInkProg
+
 Port := 9870
+Newline := char(10)
 
 server := (http.new)()
 NotFound := {status: 404, body: 'file not found'}
@@ -101,19 +111,46 @@ addRoute('/repo/:userName/:repoName', params => (req, end) => req.method :: {
 	_ -> end(MethodNotAllowed)
 })
 
-addRoute('/fileproxy/*githubURL', params => (req, end) => req.method :: {
-	'GET' -> req(params.githubURL, evt => evt.type :: {
-		'resp' -> end({
-			status: 200
-			headers: {'Content-Type': 'text/plain'}
-			body: evt.data.body
-		})
-		'error' -> end({
-			status: 500
-			headers: {'Content-Type': 'text/plain'}
-			body: evt.message
-		})
-	})
+addRoute('/embed/*githubURL', params => (request, end) => request.method :: {
+	'GET' -> req(
+		{
+			` URL processing seems to trim double-slashes `
+			url: replace(params.githubURL, 'https:/', 'https://')
+		}
+		evt => evt.type :: {
+			'resp' -> hasSuffix?(params.githubURL, '.ink') :: {
+				false -> end({
+					status: 200
+					headers: {'Content-Type': 'text/plain'}
+					body: evt.data.body
+				})
+				_ -> readFile('./static/embed.html', file => file :: {
+					() -> end({
+						status: 500
+						headers: {'Content-Type': 'text/plain'}
+						body: evt.message
+					})
+					_ -> end({
+						status: 200
+						headers: {'Content-Type': 'text/html'}
+						body: f(file, {
+							fileName: params.githubURL
+							lineNos: cat(map(
+								range(1, len(split(evt.data.body, Newline)) + 1, 1)
+								string
+							), Newline)
+							prog: highlightInkProg(evt.data.body)
+						})
+					})
+				})
+			}
+			'error' -> end({
+				status: 500
+				headers: {'Content-Type': 'text/plain'}
+				body: evt.message
+			})
+		}
+	)
 	_ -> end(MethodNotAllowed)
 })
 

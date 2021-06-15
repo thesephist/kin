@@ -34,8 +34,8 @@ build:
 		static/js/highlight.js \
 		> static/ink/vendor.js
 	september translate \
-		lib/torus.js.ink \
 		src/highlight.ink \
+		lib/torus.js.ink \
 		src/app.js.ink \
 		| tee /dev/stderr > static/ink/common.js
 	cat \

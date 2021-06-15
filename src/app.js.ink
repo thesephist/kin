@@ -559,7 +559,6 @@ fetchFileChildren := (file, cb) => file.children :: {
 
 fetchFileContent := (file, cb) => file.content :: {
 	() -> (
-		` TODO: use the fileproxy later for syntax highlighting, etc `
 		resp := fetch(file.download)
 		text := bind(resp, 'then')(resp => bind(resp, 'text')())
 		bind(text, 'then')(text => (

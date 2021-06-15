@@ -1,6 +1,7 @@
 ` september syntax highlighter command, forked to highlight HTML elements `
 
 std := load('../vendor/std')
+str := load('../vendor/str')
 
 log := std.log
 f := std.format
@@ -8,8 +9,9 @@ map := std.map
 each := std.each
 slice := std.slice
 cat := std.cat
+replace := str.replace
 
-Tokenize := load('tokenize')
+Tokenize := load('../vendor/tokenize')
 Tok := Tokenize.Tok
 tokenize := Tokenize.tokenizeWithComments
 

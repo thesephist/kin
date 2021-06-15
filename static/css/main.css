@@ -565,6 +565,12 @@ li.file-tree-list-item {
     margin: 0;
 }
 
+.embed-preview {
+	display: flex;
+	flex-direction: row;
+}
+
+.embed-preview-line-nos,
 .file-preview-text .file-preview-line-nos {
     color: var(--secondary-text);
     padding-right: 12px;
@@ -577,6 +583,7 @@ li.file-tree-list-item {
     flex-grow: 0;
 }
 
+.embed-preview-texts,
 .file-preview-text .file-preview-line-texts {
     width: 0;
     flex-grow: 1;
