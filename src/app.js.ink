@@ -33,7 +33,7 @@ fetchAPI := (url, data, description, withRespJSON) => (
 			bind(json, 'then')(data => withRespJSON(data))
 		)
 		_ -> (
-			showAlert(f('Could not retrieve {{ 0 }}. Please try again.', [description]))
+			showAlert(f('Couldn\'t get {{ 0 }}. Double-check your URLs and try again.', [description]))
 			withRespJSON(())
 		)
 	})
@@ -353,6 +353,13 @@ Sidebar := () => State.sidebar? :: {
 		])
 		RepoPanel()
 		h('div', ['file-tree-list-container'], [
+			repo := State.repo :: {
+				() -> ()
+				_ -> h('div', ['file-tree-branch-label'], [
+					h('span', ['file-tree-branch-icon'], ['⎇ '])
+					State.repo.branch
+				])
+			}
 			FileTreeList(State.files)
 		])
 		h('p', ['sidebar-credits'], [

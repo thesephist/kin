@@ -105,6 +105,7 @@ addRoute('/repo/:userName/:repoName', params => (req, end) => req.method :: {
 				description: repo.description
 				homepage: repo.homepage
 				language: repo.language
+				branch: repo.'default_branch'
 			})
 		})
 	})

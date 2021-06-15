@@ -328,6 +328,19 @@ nav a.home-link:hover {
     margin-top: 18px;
 }
 
+.file-tree-branch-label {
+    color: var(--secondary-text);
+}
+
+.file-tree-branch-label:hover::after {
+    content: ' (git branch)';
+}
+
+.file-tree-branch-icon {
+    display: inline-block;
+    width: 24px;
+}
+
 ul.file-tree-list {
     margin: 0;
     padding-left: 0;
