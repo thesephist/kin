@@ -354,6 +354,8 @@ Sidebar := () => State.sidebar? :: {
 			FileTreeList(State.files)
 		])
 	])
+	` TODO: add "Ink Codebase Browser is a project by Linus, built with Ink,
+	September, and Merlot" `
 }
 
 FilePreview := (

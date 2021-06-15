@@ -1,0 +1,83 @@
+<!doctype html>
+
+<meta charset="utf-8">
+<title>Ink Codebase Proxy Demo</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/static/css/main.css">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        width: calc(100% - 32px);
+        max-width: 760px;
+        margin: 2em auto;
+    }
+    iframe {
+        width: 100%;
+        height: 600px;
+        border-radius: 4px;
+        border: 2px solid var(--secondary-text);
+    }
+</style>
+
+
+<div class="file-preview-markdown-container">
+    <h1>Ink Codebase Proxy Demo</h1>
+
+    <p>
+    In addition to a full web application for exploring GitHub repositories, Kin
+    uses much of the same code to provide a second useful service: <em>Ink syntax
+        highlighting as a service</em>.
+    </p>
+
+    <p>
+    To make the service available, Kin acts as an HTTP proxy for public source
+    files on GitHub. Kin URLs of the format <code>https://code.dotink.co/embed/{{
+        GitHub Download URL }}</code> are parsed to the right files. In each case, the
+    file is downloaded from GitHub, and if it's an Ink source file, it's
+    additionally highlighted and annotated with line numbers before being sent back
+    to the client. This means embedding a syntax-highlighted, line-numbered Ink
+    source file in any webpage is as simple as writing
+    </p>
+
+    <pre>
+&lt;iframe
+    src="/embed/https://raw.githubusercontent.com/thesephist/ink/master/samples/std.ink"
+    frameborder="0"&gt;
+&lt;/iframe&gt;
+    </pre>
+
+    <p>
+    For example, here's a syntax-highlighted version of the <a
+                                                                    href="https://dotink.co/docs/lib/">Ink standard library</a>.
+    </p>
+
+    <iframe src="/embed/https://raw.githubusercontent.com/thesephist/ink/master/samples/std.ink" frameborder="0"></iframe>
+
+    <p>
+    This file implements the sorting algorithm <a
+                                                       href="https://en.wikipedia.org/wiki/Quicksort">quicksort</a>, used as the
+                                                   sorting algorithm in most Ink programs today.
+    </p>
+
+    <iframe src="/embed/https://raw.githubusercontent.com/thesephist/ink/master/samples/quicksort.ink" frameborder="0"></iframe>
+
+    <p>
+    More complex Ink source files can also be highlighted this way. For example,
+    the following source file is the semantic analysis algorithm in the <a
+                                                                                href="https://github.com/thesephist/september">September compiler</a>, an
+                                                                            Ink-to-JavaScript compiler written in Ink itself.
+    </p>
+
+    <iframe src="/embed/https://raw.githubusercontent.com/thesephist/september/HEAD/src/analyze.ink" frameborder="0"></iframe>
+
+    <p>
+    Embedding source files that aren't Ink programs will simply return a
+    line-numbered preview -- no syntax highlighting occurs. For example, the
+    following is the JavaScript runtime used by the September compiler.
+    </p>
+
+    <iframe src="/embed/https://raw.githubusercontent.com/thesephist/september/HEAD/runtime/ink.js" frameborder="0"></iframe>
+</div>
+

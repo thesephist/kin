@@ -118,32 +118,28 @@ addRoute('/embed/*githubURL', params => (request, end) => request.method :: {
 			url: replace(params.githubURL, 'https:/', 'https://')
 		}
 		evt => evt.type :: {
-			'resp' -> hasSuffix?(params.githubURL, '.ink') :: {
-				false -> end({
-					status: 200
+			'resp' -> readFile('./static/embed.html', file => file :: {
+				() -> end({
+					status: 500
 					headers: {'Content-Type': 'text/plain'}
-					body: evt.data.body
+					body: evt.message
 				})
-				_ -> readFile('./static/embed.html', file => file :: {
-					() -> end({
-						status: 500
-						headers: {'Content-Type': 'text/plain'}
-						body: evt.message
-					})
-					_ -> end({
-						status: 200
-						headers: {'Content-Type': 'text/html'}
-						body: f(file, {
-							fileName: params.githubURL
-							lineNos: cat(map(
-								range(1, len(split(evt.data.body, Newline)) + 1, 1)
-								string
-							), Newline)
-							prog: highlightInkProg(evt.data.body)
-						})
+				_ -> end({
+					status: 200
+					headers: {'Content-Type': 'text/html'}
+					body: f(file, {
+						fileName: params.githubURL
+						lineNos: cat(map(
+							range(1, len(split(evt.data.body, Newline)) + 1, 1)
+							string
+						), Newline)
+						prog: hasSuffix?(params.githubURL, '.ink') :: {
+							true -> highlightInkProg(evt.data.body)
+							_ -> evt.data.body
+						}
 					})
 				})
-			}
+			})
 			'error' -> end({
 				status: 500
 				headers: {'Content-Type': 'text/plain'}
@@ -157,6 +153,7 @@ addRoute('/embed/*githubURL', params => (request, end) => request.method :: {
 ` static paths `
 addRoute('/static/*staticPath', params => serveStatic(params.staticPath))
 addRoute('/favicon.ico', params => serveStatic('favicon.ico'))
+addRoute('/demo', params => serveStatic('demo.html'))
 addRoute('/', params => serveStatic('index.html'))
 
 start := () => (

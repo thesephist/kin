@@ -567,8 +567,13 @@ li.file-tree-list-item {
 }
 
 .embed-preview {
+    tab-size: 4;
     display: flex;
     flex-direction: row;
+}
+
+.embed-preview pre {
+    margin: 4px 0;
 }
 
 .embed-preview-line-nos,
@@ -683,6 +688,10 @@ li.file-tree-list-item {
         border-bottom: 1px solid var(--secondary-text);
         width: 100%;
         height: 0;
+    }
+    .embed-preview pre,
+    .file-pane pre {
+        font-size: .875em;
     }
 }
 
