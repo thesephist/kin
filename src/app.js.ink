@@ -6,7 +6,6 @@ f := std.format
 
 ` constants `
 
-Mobile? := ~(window.innerWidth > 700)
 Newline := char(10)
 MaxPathChars := 16
 
@@ -21,6 +20,8 @@ FileType := {
 }
 
 ` utilities `
+
+mobile? := () => ~(window.innerWidth > 700)
 
 fetchAPI := (url, data, withRespJSON) => (
 	resp := fetch(url, data)
@@ -41,11 +42,25 @@ fetchContents := (userName, repoName, path, withContents) => fetchAPI(
 	data => withContents(data)
 )
 
+fileInPane? := (pane, file) => pane :: {
+	() -> false
+	_ -> (
+		openFiles := pane.files
+		(sub := i => i :: {
+			len(openFiles) -> false
+			_ -> openFiles.(i) :: {
+				file -> true
+				_ -> sub(i + 1)
+			}
+		})(0)
+	)
+}
+
 fileInWorkspace? := file => (
-	allOpenFiles := flatten(map(State.panes, pane => pane.files))
+	openFiles := flatten(map(State.panes, pane => pane.files))
 	(sub := i => i :: {
-		len(allOpenFiles) -> false
-		_ -> allOpenFiles.(i) :: {
+		len(openFiles) -> false
+		_ -> openFiles.(i) :: {
 			file -> true
 			_ -> sub(i + 1)
 		}
@@ -63,8 +78,20 @@ fileTypeFromPath := path => true :: {
 	_ -> FileType.Text
 }
 
+` highlight.js interop `
+
 getLanguage := hljs.getLanguage
-listLanguages := hljs.listLanguages
+languageList := (hljs.listLanguages)()
+Languages := (
+	langs := {}
+	each(keys(languageList), i => (
+		langKey := languageList.(i)
+		langName := getLanguage(langKey).name
+		langs.(langName) := langKey
+	))
+	langs
+)
+
 highlightProg := (fileName, content) => (
 	` langCode must be a JS string because highlight.js's API expects only JS
 	strings, and passing an Ink-compatible string will error. `
@@ -80,22 +107,28 @@ highlightProg := (fileName, content) => (
 		}
 	})
 
-	language := (eval(str('getLanguage(langCode) || null')) :: {
+	` a bit of a trick to convert undefined (which highlight.js's API returns
+	here sometimes) to a null, which is the only empty value Ink understands. `
+	langName := (eval(str('getLanguage(langCode) || null')) :: {
 		() -> langCode
-		_ -> lower(getLanguage(langCode).name)
+		_ -> getLanguage(langCode).name
+	})
+	` highlight.js sometimes returns this value as e.g. "html, xml" `
+	language := (langKey := Languages.(langName) :: {
+		() -> langName
+		_ -> langKey
 	})
 
-	filter(listLanguages(), lg => lg = language) :: {
+	filter(languageList, lg => lg = language) :: {
 		[_] -> (
 			result := (hljs.highlight)(content, {
 				language: langCode
 			})
-			bind(console, 'log')(result)
 			result.value
 		)
 		_ -> langCode :: {
 			'ink' -> highlightInkProg(content)
-			_ -> content
+			_ -> escapeHTML(content)
 		}
 	}
 )
@@ -260,29 +293,7 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 			}
 			hae('button', ['file-tree-node-name'], {}, {
 				click: () => file.type :: {
-					` TODO: support multi-pane `
-					'file' -> fileInWorkspace?(file) :: {
-						true -> render(State.panes.'0'.active := file)
-						_ -> (
-							pane := State.panes.0 :: {
-								() -> State.panes := [{
-									active: file
-									files: [file]
-								}]
-								_ -> (
-									pane.files.len(pane.files) := file
-									pane.active := file
-								)
-							}
-							fetchFileContent(file, render)
-
-							Mobile? :: {
-								true -> State.sidebar? := false
-							}
-
-							render()
-						)
-					}
+					'file' -> openFileInPane(State.panes.0, file)
 					'dir' -> (
 						file.open? := ~(file.open?)
 						fetchFileChildren(file, render)
@@ -376,9 +387,9 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 	}
 }
 
-FilePane := pane => h('div', ['file-pane'], [
+FilePane := (pane, paneIndex) => h('div', ['file-pane'], [
 	h('div', ['file-pane-header'], (
-		map(pane.files, file => h('div', ['file-pane-header-tab-container'], [
+		tabs := map(pane.files, file => h('div', ['file-pane-header-tab-container'], [
 			h(
 				'div'
 				[
@@ -425,6 +436,12 @@ FilePane := pane => h('div', ['file-pane'], [
 				]
 			)
 		]))
+
+		append(tabs, [
+			hae('button', ['file-pane-split'], {}, {
+				click: () => openFileInPane(State.panes.(paneIndex + 1), pane.active)
+			}, ['split →'])
+		])
 	))
 	FilePreview(pane.active)
 ])
@@ -432,7 +449,7 @@ FilePane := pane => h('div', ['file-pane'], [
 FilePanes := () => h(
 	'div'
 	['file-panes']
-	map(State.panes, pane => FilePane(pane))
+	map(State.panes, (pane, i) => FilePane(pane, i))
 )
 
 ` globals and callbacks `
@@ -456,6 +473,29 @@ refreshRepo := () => (
 		render()
 	))
 )
+
+openFileInPane := (pane, file) => fileInPane?(pane, file) :: {
+	true -> render(pane.active := file)
+	_ -> (
+		pane :: {
+			() -> State.panes.len(State.panes) := {
+				active: file
+				files: [file]
+			}
+			_ -> (
+				pane.files.len(pane.files) := file
+				pane.active := file
+			)
+		}
+		fetchFileContent(file, render)
+
+		mobile?() :: {
+			true -> State.sidebar? := false
+		}
+
+		render()
+	)
+}
 
 fetchFileChildren := (file, cb) => file.children :: {
 	() -> (

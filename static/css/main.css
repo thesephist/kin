@@ -449,6 +449,18 @@ li.file-tree-list-item {
     margin-left: 36px;
 }
 
+.file-pane .file-pane-split {
+    margin-left: auto;
+    margin-right: 14px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.file-pane .file-pane-split:hover {
+    text-decoration: underline;
+}
+
 .file-pane .file-pane-header-path {
     color: var(--secondary-text);
 }
