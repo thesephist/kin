@@ -2,7 +2,7 @@
 
 The **Ink codebase browser** is a tool to explore open-source code on GitHub, especially my side projects written in the [Ink](https://dotink.co) programming language. It offers multi-pane, multi-tab interfaces for looking at source code from projects on GitHub, and generates Markdown previews and syntax highlighting for many languages including Ink.
 
-![The Ink codebase browser running in the browser on a browser window and on an iPhone](static/img/kin.png)
+![The Ink codebase browser running in the browser on a browser window and on an iPhone](https://github.com/thesephist/kin/raw/main/static/img/kin.png)
 
 The codebase browser is a full-stack Ink application. It's written in pure Ink except for the syntax highlighting library used to highlight non-Ink source code ([highlight.js](https://highlightjs.org/)) and [Torus](https://github.com/thesephist/torus) used as the UI rendering backend. In addition to these libraries, the project leans on [September](https://github.com/thesephist/september) for building the frontend and for syntax highlighting Ink source code; and it depends on [Merlot](https://github.com/thesephist/merlot) for rendering Markdown file previews.
 
@@ -20,7 +20,7 @@ The codebase browser solves all of these problems through the main interface and
 
 The codebase browser uses [September](https://github.com/thesephist/september)'s Ink syntax highlighting algorithm to syntax highlight Ink programs. The algorithm is compiled to JavaScript so it can run fully in the browser.
 
-![Ink codebase browser with two panes of Ink source code open](static/img/kin-ink-project.png)
+![Ink codebase browser with two panes of Ink source code open](https://github.com/thesephist/kin/raw/mainstatic/img/kin-ink-project.png)
 
 ### Rich file previews
 
@@ -31,11 +31,11 @@ The codebase browser recognizes four different types of files
 3. Text files, which are displayed with line numbers and syntax highlighting, if the language can be detected
 4. Markdown files, which are rendered as their compiled versions with [Merlot](https://github.com/thesephist/merlot)'s Markdown engine (note that Merlot isn't fully compliant with any common Markdown spec -- it mostly just has the subset that I use, though it's being improved.)
 
-![Ink codebase browser viewing a rendered Markdown file](static/img/kin-markdown-project.png)
+![Ink codebase browser viewing a rendered Markdown file](https://github.com/thesephist/kin/raw/mainstatic/img/kin-markdown-project.png)
 
 You can see an example Markdown file preview above, next to an Ink source file that's been syntax highlighted. Below, we have a TypeScript React file next to an image preview.
 
-![Ink codebase browser viewing an image preview](static/img/kin-nextjs-project.png)
+![Ink codebase browser viewing an image preview](https://github.com/thesephist/kin/raw/mainstatic/img/kin-nextjs-project.png)
 
 File previews require the full file to be fetched from GitHub and potentially parsed locally, so files larger than 1MB are not rendered.
 
@@ -51,7 +51,7 @@ The Ink codebase browser has a less obvious second feature, which is what I call
 
 I frequently want to show some bit of Ink program online, on one of my technical blogs or linked from a comment or tweet, but simply linking to a file or a GitHub preview is suboptimal because Ink has no syntax highlighting support in most places. Given that this project already had a way to syntax highlight Ink code for the web, I chose to repurpose this code to make a service that acts as an HTTP proxy that highlights any Ink code passing through it.
 
-![A demo page showing embedded syntax highlighted Ink source files](static/img/kin-embed-demo.png)
+![A demo page showing embedded syntax highlighted Ink source files](https://github.com/thesephist/kin/raw/mainstatic/img/kin-embed-demo.png)
 
 Using this "proxy" service, I can embed links to syntax-highlighted versions of Ink source files that live on my GitHub repositories. For example, above is a sample document that takes advantage of this. You can see a live demo at [code.dotink.co/demo](https://code.dotink.co/demo).
 
