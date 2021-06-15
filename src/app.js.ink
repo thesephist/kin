@@ -528,7 +528,7 @@ root := bind(document, 'querySelector')('#root')
 r := Renderer(root)
 update := r.update
 
-refreshRepo := () => (
+refreshRepo := initialFilePath => (
 	State.repo := ()
 	State.files := []
 	State.panes := []
@@ -543,10 +543,28 @@ refreshRepo := () => (
 		_ -> (
 			State.files := map(contents, file => file.open? := false)
 
-			` If the repo has a README, open it immediately `
-			readmeFile := filter(State.files, file => lower(file.name) = 'readme.md').0 :: {
-				() -> ()
-				_ -> openFileInPane(State.panes.0, readmeFile)
+			` open a default file `
+			path := '/' + trimPrefix(initialFilePath, '/')
+			pathParts := split(path, '/')
+			dirParts := slice(pathParts, 0, len(pathParts) - 1)
+			dirPath := '/' + cat(dirParts, '/')
+			fileName := pathParts.len(dirParts)
+
+			doesNotExistAlert := () =>
+				showAlert(f('Could not open {{ 0 }} — the file doesn\'t exist.', [initialFilePath]))
+
+			dirPath :: {
+				'/' -> initialFile := filter(State.files, file => lower(file.name) = lower(fileName)).0 :: {
+					() -> doesNotExistAlert()
+					_ -> openFileInPane(State.panes.0, initialFile)
+				}
+				_ -> fetchContents(State.userName, State.repoName, dirPath, contents => contents :: {
+					() -> doesNotExistAlert()
+					_ -> initialFile := filter(contents, file => lower(file.name) = lower(fileName)).0 :: {
+						() -> doesNotExistAlert()
+						_ -> openFileInPane(State.panes.0, initialFile)
+					}
+				})
 			}
 
 			render()
@@ -642,7 +660,14 @@ bind(router, 'addHandler')(
 			'repo' -> (
 				State.userName := params.userName
 				State.repoName := params.repoName
-				refreshRepo()
+
+				` the user may specify a first "default" file to open after the
+				hash in the URL. It defaults to the repository's README. `
+				initialFilePath := (givenPath := slice(location.hash, 1, len(location.hash)) :: {
+					'' -> 'README.md'
+					_ -> givenPath
+				})
+				refreshRepo(initialFilePath)
 
 				document.title := f('{{ userName }}/{{ repoName }} | Ink Codebase Browser', State)
 				render()
