@@ -72,6 +72,7 @@ fileTypeFromPath := path => true :: {
 	hasSuffix?(path, '.png') -> FileType.Image
 	hasSuffix?(path, '.gif') -> FileType.Image
 	hasSuffix?(path, '.bmp') -> FileType.Image
+	hasSuffix?(path, '.svg') -> FileType.Image
 
 	hasSuffix?(path, '.sqlite') -> FileType.Blob
 
@@ -388,61 +389,58 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 }
 
 FilePane := (pane, paneIndex) => h('div', ['file-pane'], [
-	h('div', ['file-pane-header'], (
-		tabs := map(pane.files, file => h('div', ['file-pane-header-tab-container'], [
-			h(
-				'div'
-				[
-					'file-pane-header-tab'
-					pane.active :: {
-						file -> 'active'
-						_ -> ''
+	h('div', ['file-pane-header'], map(pane.files, file => h('div', ['file-pane-header-tab-container'], [
+		h(
+			'div'
+			[
+				'file-pane-header-tab'
+				pane.active :: {
+					file -> 'active'
+					_ -> ''
+				}
+			]
+			[
+				hae(
+					'button'
+					['file-pane-header-info']
+					{title: file.path}
+					{
+						click: () => render(pane.active := file)
 					}
-				]
-				[
-					hae(
-						'button'
-						['file-pane-header-info']
-						{title: file.path}
-						{
-							click: () => render(pane.active := file)
-						}
-						[
-							h('span', ['file-pane-header-path'], [(
-								path := trimSuffix(file.path, file.name)
-								len(path) < MaxPathChars :: {
-									true -> path
-									_ -> '...' + slice(path, len(path) - MaxPathChars, len(path))
-								}
-							)])
-							h('span', ['file-pane-header-name'], [file.name])
-						]
-					)
-					hae('button', ['file-pane-close'], {}, {
-						click: () => (
-							pane.files := filter(pane.files, f => ~(f = file))
-							pane.files :: {
-								` if pane is empty, remove pane from panes `
-								[] -> State.panes := filter(State.panes, p => ~(p = pane))
-								` otherwise, set active pane file to something else `
-								_ -> pane.active :: {
-									` if current file was active, choose a different active file `
-									file -> pane.active := pane.files.0
-								}
+					[
+						h('span', ['file-pane-header-path'], [(
+							path := trimSuffix(file.path, file.name)
+							len(path) < MaxPathChars :: {
+								true -> path
+								_ -> '...' + slice(path, len(path) - MaxPathChars, len(path))
 							}
-							render()
-						)
-					}, ['×'])
-				]
-			)
-		]))
-
-		append(tabs, [
-			hae('button', ['file-pane-split'], {}, {
-				click: () => openFileInPane(State.panes.(paneIndex + 1), pane.active)
-			}, ['split →'])
-		])
-	))
+						)])
+						h('span', ['file-pane-header-name'], [file.name])
+					]
+				)
+				pane.active :: {
+					file -> hae('button', ['file-pane-split'], {}, {
+						click: () => openFileInPane(State.panes.(paneIndex + 1), pane.active)
+					}, ['→'])
+				}
+				hae('button', ['file-pane-close'], {}, {
+					click: () => (
+						pane.files := filter(pane.files, f => ~(f = file))
+						pane.files :: {
+							` if pane is empty, remove pane from panes `
+							[] -> State.panes := filter(State.panes, p => ~(p = pane))
+							` otherwise, set active pane file to something else `
+							_ -> pane.active :: {
+								` if current file was active, choose a different active file `
+								file -> pane.active := pane.files.0
+							}
+						}
+						render()
+					)
+				}, ['×'])
+			]
+		)
+	])))
 	FilePreview(pane.active)
 ])
 

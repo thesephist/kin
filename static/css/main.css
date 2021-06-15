@@ -272,8 +272,8 @@ nav a.home-link:hover {
 }
 
 .repo-info-panel.loading {
-	width: 72%;
-	margin: 2em auto 0 auto;
+    width: 72%;
+    margin: 2em auto 0 auto;
 }
 
 .repo-panel .repo-header-link a,
@@ -396,7 +396,7 @@ li.file-tree-list-item {
 }
 
 .file-tree-node-loading.loading {
-	width: calc(100% - 20px);
+    width: calc(100% - 20px);
     margin: 1em 0 1em auto;
 }
 
@@ -422,7 +422,7 @@ li.file-tree-list-item {
 
 .file-pane {
     background: var(--hover-bg);
-    border-right: 2px solid var(--active-bg);
+    border-right: 1px solid var(--secondary-text);
     height: 100%;
     width: 0;
     flex-grow: 1;
@@ -447,18 +447,6 @@ li.file-tree-list-item {
 
 .sidebar-show-button + .file-panes .file-pane:first-child .file-pane-header {
     margin-left: 36px;
-}
-
-.file-pane .file-pane-split {
-    margin-left: auto;
-    margin-right: 14px;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-}
-
-.file-pane .file-pane-split:hover {
-    text-decoration: underline;
 }
 
 .file-pane .file-pane-header-path {
@@ -488,13 +476,14 @@ li.file-tree-list-item {
     border: 0;
     background: transparent;
     cursor: pointer;
+    white-space: nowrap;
 }
 
+.file-pane .file-pane-split,
 .file-pane .file-pane-close {
     border: 0;
     background: transparent;
     display: inline-block;
-    padding: 4px;
     margin-left: 8px;
     opacity: 0;
     height: 1em;
@@ -506,12 +495,24 @@ li.file-tree-list-item {
     transition: opacity .2s, background .2s;
 }
 
+.file-pane .file-pane-split:hover,
 .file-pane .file-pane-close:hover {
     background: var(--active-bg);
 }
 
+.file-pane .file-pane-split {
+    /* system fonts seem to be better at this glyph */
+    font-family: system-ui, sans-serif;
+}
+
+.file-pane .file-pane-header-tab:hover .file-pane-split,
+.file-pane .file-pane-split:focus,
 .file-pane .file-pane-header-tab:hover .file-pane-close,
-.file-pane .file-pane-close:focus {
+.file-pane .file-pane-close:focus,
+.file-pane .file-pane-header-tab.active .file-pane-split,
+.file-pane .file-pane-split.active,
+.file-pane .file-pane-header-tab.active .file-pane-close,
+.file-pane .file-pane-close.active {
     opacity: 1;
 }
 
