@@ -9,7 +9,6 @@ f := std.format
 Newline := char(10)
 MaxPathChars := 16
 
-` TODO: support Markdown previews `
 FileType := {
 	` cannot display `
 	Blob: ~1
@@ -17,6 +16,9 @@ FileType := {
 	Text: 0
 	` preview `
 	Image: 1
+
+	` markdown `
+	Markdown: 2
 }
 
 ` utilities `
@@ -25,9 +27,17 @@ mobile? := () => ~(window.innerWidth > 700)
 
 fetchAPI := (url, data, withRespJSON) => (
 	resp := fetch(url, data)
-	` TODO: handle errors -- non-200 responses `
-	json := bind(resp, 'then')(resp => bind(resp, 'json')())
-	bind(json, 'then')(data => withRespJSON(data))
+	bind(resp, 'then')(resp => resp.status :: {
+		200 -> (
+			json := bind(resp, 'json')()
+			bind(json, 'then')(data => withRespJSON(data))
+		)
+		_ -> (
+			` TODO: improve this alert UI `
+			alert('Couldn\'t fetch the data. Please try again.')
+			withRespJSON(())
+		)
+	})
 )
 
 fetchRepo := (userName, repoName, withRepo) => fetchAPI(
@@ -73,6 +83,9 @@ fileTypeFromPath := path => true :: {
 	hasSuffix?(path, '.gif') -> FileType.Image
 	hasSuffix?(path, '.bmp') -> FileType.Image
 	hasSuffix?(path, '.svg') -> FileType.Image
+
+	hasSuffix?(path, '.md') -> FileType.Markdown
+	hasSuffix?(path, '.markdown') -> FileType.Markdown
 
 	hasSuffix?(path, '.sqlite') -> FileType.Blob
 
@@ -343,50 +356,78 @@ Sidebar := () => State.sidebar? :: {
 	])
 }
 
-FilePreview := file => fileTypeFromPath(file.path) :: {
-	FileType.Blob -> h('div', ['file-preview', 'file-preview-blob'], [
-		'Can\'t preview this type of file'
-	])
-	FileType.Image -> h(
-		'div'
-		['file-preview', 'file-preview-image']
-		[ha('img', ['file-preview-image-content'], {src: file.download}, [])]
-	)
-	FileType.Text -> content := file.content :: {
-		() -> h('div', ['file-preview', 'file-preview-text'], [
-			h('div', ['file-preview-loading', 'loading'], [])
-		])
-		_ -> h(
-			'div'
-			['file-preview', 'file-preview-text']
-			[(
-				` for performance reasons, we shell out to a JS call here. The
-				Ink stdlib's str.split takes up to 100s of ms, which is
-				unacceptable on renders. `
-				lineCount := len(bind(str(content), 'split')(Newline)) - 1
-
-				ha(
-					'div'
-					['file-preview-text-scroller']
-					{
-						style: {
-							height: string(lineCount * 1.25 + 5) + 'em'
-						}
-					}
-					[
-						h('pre', ['file-preview-line-nos']
-							[cat(map(range(1, lineCount + 1, 1), string), Newline)])
-						(
-							el := bind(document, 'createElement')('pre')
-							el.className := 'file-preview-line-texts'
-							el.innerHTML := content
-						)
-					]
-				)
-			)]
-		)
+FilePreview := (
+	mdCache := {
+		lastHTML: ''
+		lastRender: ()
 	}
-}
+
+	file => fileTypeFromPath(file.path) :: {
+		FileType.Blob -> h('div', ['file-preview', 'file-preview-blob'], [
+			'Can\'t preview this type of file'
+		])
+		FileType.Image -> h(
+			'div'
+			['file-preview', 'file-preview-image']
+			[ha('img', ['file-preview-image-content'], {src: file.download}, [])]
+		)
+		FileType.Text -> content := file.content :: {
+			() -> h('div', ['file-preview', 'file-preview-text'], [
+				h('div', ['file-preview-loading', 'loading'], [])
+			])
+			_ -> h(
+				'div'
+				['file-preview', 'file-preview-text']
+				[(
+					` for performance reasons, we shell out to a JS call here. The
+					Ink stdlib's str.split takes up to 100s of ms, which is
+					unacceptable on renders. `
+					lineCount := len(bind(str(content), 'split')(Newline)) - 1
+
+					ha(
+						'div'
+						['file-preview-text-scroller']
+						{
+							style: {
+								height: string(lineCount * 1.25 + 5) + 'em'
+							}
+						}
+						[
+							h('pre', ['file-preview-line-nos']
+								[cat(map(range(1, lineCount + 1, 1), string), Newline)])
+							(
+								el := bind(document, 'createElement')('pre')
+								el.className := 'file-preview-line-texts'
+								el.innerHTML := content
+							)
+						]
+					)
+				)]
+			)
+		}
+		FileType.Markdown -> content := file.content :: {
+			() -> h('div', ['file-preview', 'file-preview-markdown'], [
+				h('div', ['file-preview-loading', 'loading'], [])
+			])
+			_ -> h(
+				'div'
+				['file-preview', 'file-preview-markdown']
+				[mdCache.lastHTML :: {
+					content -> mdCache.lastRender
+					_ -> (
+						previewEl := bind(document, 'createElement')('div')
+						previewEl.className := 'file-preview-markdown-container'
+						previewEl.innerHTML := content
+						mdCache.lastHTML := content
+						mdCache.lastRender := previewEl
+						previewEl
+					)
+				}
+				]
+			)
+		}
+	}
+)
 
 FilePane := (pane, paneIndex) => h('div', ['file-pane'], [
 	h('div', ['file-pane-header'], map(pane.files, file => h('div', ['file-pane-header-tab-container'], [
@@ -466,10 +507,20 @@ refreshRepo := () => (
 		State.repo := repo
 		render()
 	))
-	fetchContents(State.userName, State.repoName, '/', contents => (
-		State.files := map(contents, file => file.open? := false)
-		render()
-	))
+	fetchContents(State.userName, State.repoName, '/', contents => contents :: {
+		() -> ()
+		_ -> (
+			State.files := map(contents, file => file.open? := false)
+
+			` If the repo has a README, open it immediately `
+			readmeFile := filter(State.files, file => lower(file.name) = 'readme.md').0 :: {
+				() -> ()
+				_ -> openFileInPane(State.panes.0, readmeFile)
+			}
+
+			render()
+		)
+	})
 )
 
 openFileInPane := (pane, file) => fileInPane?(pane, file) :: {
@@ -514,6 +565,7 @@ fetchFileContent := (file, cb) => file.content :: {
 		bind(text, 'then')(text => (
 			file.content := (fileTypeFromPath(file.path) :: {
 				FileType.Text -> highlightProg(file.name, text)
+				FileType.Markdown -> transform(text)
 				_ -> text
 			})
 			cb()
@@ -560,7 +612,7 @@ bind(router, 'addHandler')(
 			'repoSlash' -> goTo('/' + params.userName + '/' + params.repoName)
 			'github' -> goTo('/' + params.userName + '/' + params.repoName)
 			'githubSlash' -> goTo('/' + params.userName + '/' + params.repoName)
-			_ -> goTo('/thesephist/ink')
+			_ -> goTo('/thesephist/kin')
 		}
 	)
 )

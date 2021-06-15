@@ -11,14 +11,21 @@ build-libs:
 		vendor/std.ink \
 		vendor/str.ink \
 		vendor/quicksort.ink \
-		| tee /dev/stderr > static/ink/lib.js
+		> static/ink/lib.js
 
 # build september
 build-september:
 	september translate \
 		../september/src/iota.ink \
 		../september/src/tokenize.ink \
-		| tee /dev/stderr > static/ink/september.js
+		> static/ink/september.js
+
+# build merlot
+build-merlot:
+	september translate \
+		../merlot/lib/reader.ink \
+		../merlot/lib/md.ink \
+		> static/ink/merlot.js
 
 # build app clients
 build:
@@ -35,12 +42,13 @@ build:
 		static/ink/vendor.js \
 		static/ink/lib.js \
 		static/ink/september.js \
+		static/ink/merlot.js \
 		static/ink/common.js \
 		> static/ink/bundle.js
 b: build
 
 # run all builds from scratch
-build-all: build-libs build-september build
+build-all: build-libs build-september build-merlot build
 
 # build whenever Ink sources change
 watch:

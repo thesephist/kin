@@ -585,6 +585,76 @@ li.file-tree-list-item {
     overflow-y: hidden;
 }
 
+.file-preview-markdown .file-preview-markdown-container {
+	overflow-y: auto;
+    height: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    line-height: 1.5em;
+}
+
+.file-preview-markdown .file-preview-markdown-container > :first-child {
+	margin-top: 3rem;
+}
+
+.file-preview-markdown .file-preview-markdown-container > :last-child {
+	margin-bottom: 6rem;
+}
+
+/* Markdown styling, taken from thesephist/merlot */
+
+.file-preview-markdown-container p,
+.file-preview-markdown-container li {
+    line-height: 1.5em;
+}
+
+.file-preview-markdown-container strike {
+    color: var(--secondary-text);
+}
+
+.file-preview-markdown-container img {
+    max-width: 100%;
+}
+
+.file-preview-markdown-container a {
+    color: var(--primary-text);
+    text-decoration: underline;
+}
+
+.file-preview-markdown-container pre,
+.file-preview-markdown-container code {
+    background: var(--hover-bg);
+    font-size: 1em;
+    font-family: 'IBM Plex Mono', 'Menlo', 'Monaco', monospace;
+}
+
+.file-preview-markdown-container pre {
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 12px 8px;
+    overflow-x: auto;
+}
+
+.file-preview-markdown-container code {
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.file-preview-markdown-container pre code {
+    padding: 0;
+}
+
+.file-preview-markdown-container blockquote {
+    margin: 0;
+    border-left: 4px solid var(--active-bg);
+    padding-left: 1em;
+    display: block;
+}
+
+.file-preview-markdown-container input[type="checkbox"] {
+	pointer-events: none;
+}
+
 /* mobile */
 
 @media only screen and (max-width: 700px) {
