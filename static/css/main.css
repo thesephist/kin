@@ -199,6 +199,16 @@ nav a.home-link:hover {
     opacity: .8;
 }
 
+.sidebar-credits {
+	margin: 0;
+	margin-top: 8px;
+}
+
+.sidebar-credits a {
+	color: var(--secondary-text);
+	font-size: 14px;
+}
+
 .repo-panel .repo-panel-header {
     display: flex;
     flex-direction: row;
@@ -605,7 +615,6 @@ li.file-tree-list-item {
     width: calc(100% - 32px);
     max-width: 760px;
     margin: 0 auto;
-    line-height: 1.5em;
 }
 
 .file-preview-markdown .file-preview-markdown-container > :first-child {

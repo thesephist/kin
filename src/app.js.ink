@@ -353,9 +353,12 @@ Sidebar := () => State.sidebar? :: {
 		h('div', ['file-tree-list-container'], [
 			FileTreeList(State.files)
 		])
+		h('p', ['sidebar-credits'], [
+			hae('a', [], {href: '/thesephist/kin'}, {
+				click: () => goTo('/thesephist/kin')
+			}, ['About this project...'])
+		])
 	])
-	` TODO: add "Ink Codebase Browser is a project by Linus, built with Ink,
-	September, and Merlot" `
 }
 
 FilePreview := (
