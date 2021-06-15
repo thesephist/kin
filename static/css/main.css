@@ -444,7 +444,7 @@ li.file-tree-list-item {
     margin: 8px 0;
 }
 
-.file-preview-text .file-preview-line-no,
+.file-preview-text .file-preview-line-nos,
 .file-preview-text .file-preview-line-texts {
     margin: 0;
 }

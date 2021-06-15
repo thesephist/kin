@@ -72,11 +72,38 @@ fileTypeFromPath := path => true :: {
 	_ -> FileType.Text
 }
 
-highlightInkBlock := blockEl => (
-	` NOTE: we assume the <pre> contains exactly and only text source as a
-	single TextNode, and nothing else. `
-	prog := blockEl.textContent
-	blockEl.innerHTML := highlightInkProg(prog)
+getLanguage := hljs.getLanguage
+listLanguages := hljs.listLanguages
+highlightProg := (fileName, content) => (
+	` langCode must be a JS string because highlight.js's API expects only JS
+	strings, and passing an Ink-compatible string will error. `
+	langCode := str(fileName :: {
+		'Dockerfile' -> 'dockerfile'
+		'Makefile' -> 'makefile'
+		_ -> dotParts := split(fileName, '.') :: {
+			[_] -> 'unknown'
+			_ -> dotParts.(len(dotParts) - 1)
+		}
+	})
+
+	language := (eval(str('getLanguage(langCode) || null')) :: {
+		() -> langCode
+		_ -> lower(getLanguage(langCode).name)
+	})
+
+	filter(listLanguages(), lg => lg = language) :: {
+		[_] -> (
+			result := (hljs.highlight)(content, {
+				language: langCode
+			})
+			bind(console, 'log')(result)
+			result.value
+		)
+		_ -> langCode :: {
+			'ink' -> highlightInkProg(content)
+			_ -> content
+		}
+	}
 )
 
 ` initial state `
@@ -247,17 +274,7 @@ FileTreeNode := file => h('div', ['file-tree-node'], [
 									pane.active := file
 								)
 							}
-							fetchFileContent(file, () => (
-								render()
-								` syntax-highlight `
-								codeBlock := bind(document, 'querySelector')('.file-preview-line-texts') :: {
-									() -> ()
-									_ -> hasSuffix?(file.name, '.ink') :: {
-										true -> highlightInkBlock(codeBlock)
-										_ -> (hljs.highlightElement)(codeBlock)
-									}
-								}
-							))
+							fetchFileContent(file, render)
 							render()
 						)
 					}
@@ -311,32 +328,26 @@ FilePreview := file => fileTypeFromPath(file.path) :: {
 			'div'
 			['file-preview', 'file-preview-text']
 			[(
-				splitLines := split(content, Newline)
+				` for performance reasons, we shell out to a JS call here. The
+				Ink stdlib's str.split takes up to 100s of ms, which is
+				unacceptable on renders. `
+				lineCount := len(bind(str(content), 'split')(Newline)) - 1
 
 				ha(
 					'div'
 					['file-preview-text-scroller']
 					{
 						style: {
-							height: string(len(splitLines) * 1.25 + 5) + 'em'
+							height: string(lineCount * 1.25 + 5) + 'em'
 						}
 					}
 					[
-						h('div', ['file-preview-line-nos']
-							map(splitLines, (_, n) => h('pre', ['file-preview-line-no'], [n + 1])))
-						h(
-							'pre'
-							[
-								'file-preview-line-texts'
-								(
-									` try to pull out the language using file ext `
-									dotParts := split(file.path, '.') :: {
-										[_] -> ''
-										_ -> 'language-' + dotParts.(len(dotParts) - 1)
-									}
-								)
-							]
-							[content]
+						h('pre', ['file-preview-line-nos']
+							[cat(map(range(1, lineCount + 1, 1), string), Newline)])
+						(
+							el := bind(document, 'createElement')('pre')
+							el.className := 'file-preview-line-texts'
+							el.innerHTML := content
 						)
 					]
 				)
@@ -451,10 +462,12 @@ fetchFileContent := (file, cb) => file.content :: {
 	() -> (
 		` TODO: use the fileproxy later for syntax highlighting, etc `
 		resp := fetch(file.download)
-		` TODO: what if not text file? `
 		text := bind(resp, 'then')(resp => bind(resp, 'text')())
 		bind(text, 'then')(text => (
-			file.content := text
+			file.content := (fileTypeFromPath(file.path) :: {
+				FileType.Text -> highlightProg(file.name, text)
+				_ -> text
+			})
 			cb()
 		))
 	)
