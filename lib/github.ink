@@ -10,8 +10,9 @@ serJSON := json.ser
 deJSON := json.de
 
 cache := load('cache')
+secrets := load('../secrets')
 
-AccessToken := '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'
+AccessToken := secrets.AccessToken
 APIRoot := 'https://api.github.com'
 GitHubV3Accept := 'application/vnd.github.v3+json'
 UserAgent := 'ink, dotink.co'
