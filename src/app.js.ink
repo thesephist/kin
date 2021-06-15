@@ -81,6 +81,9 @@ highlightProg := (fileName, content) => (
 		'Dockerfile' -> 'dockerfile'
 		'Makefile' -> 'makefile'
 		_ -> dotParts := split(fileName, '.') :: {
+			` Klisp is a lisp flavor written in Ink. It's syntactically closest
+			to scheme, which is in our language package. `
+			[_, 'klisp'] -> 'scheme'
 			[_] -> 'unknown'
 			_ -> dotParts.(len(dotParts) - 1)
 		}
@@ -148,31 +151,43 @@ RepoPanel := (
 	state := {
 		userName: State.userName
 		repoName: State.repoName
-		inputVisible: false
+		editing?: false
+	}
+
+	submit := () => (
+		State.userName := state.userName
+		State.repoName := state.repoName
+		state.editing? := false
+		refreshRepo()
+	)
+
+	handleKeydown := evt => evt.key :: {
+		'Escape' -> render(state.editing? := false)
+		'Enter' -> submit()
 	}
 
 	() => h('div', ['repo-panel'], [
-		h('div', ['repo-panel-header'], [
-			h('div', ['repo-header-link'], [
-				Link(
-					f('{{ userName }}/{{ repoName }}', State)
-					f('https://github.com/{{ userName }}/{{ repoName }}', State)
-				)
+		state.editing? :: {
+			false -> h('div', ['repo-panel-header'], [
+				h('div', ['repo-header-link'], [
+					Link(
+						f('{{ userName }}/{{ repoName }}', State)
+						f('https://github.com/{{ userName }}/{{ repoName }}', State)
+					)
+				])
+				hae('button', ['repo-toggle-input'], {}, {
+					click: evt => (
+						state.editing? := ~(state.editing?)
+						state.editing? :: {
+							true -> (
+								state.userName := State.userName
+								state.repoName := State.repoName
+							)
+						}
+						render()
+					)
+				}, ['edit'])
 			])
-			hae('button', ['repo-toggle-input'], {}, {
-				click: evt => (
-					state.inputVisible := ~(state.inputVisible)
-					state.inputVisible :: {
-						true -> (
-							state.userName := State.userName
-							state.repoName := State.repoName
-						)
-					}
-					render()
-				)
-			}, ['edit'])
-		])
-		state.inputVisible :: {
 			true -> h('div', ['repo-input-panel'], [
 				hae(
 					'input', ['repo-input-username']
@@ -185,6 +200,7 @@ RepoPanel := (
 							state.userName := evt.target.value
 							render()
 						)
+						keydown: handleKeydown
 					}
 					[]
 				)
@@ -199,17 +215,11 @@ RepoPanel := (
 							state.repoName := evt.target.value
 							render()
 						)
+						keydown: handleKeydown
 					}
 					[]
 				)
-				hae('button', ['repo-input-submit'], {}, {
-					click: () => (
-						State.userName := state.userName
-						State.repoName := state.repoName
-						state.inputVisible := false
-						refreshRepo()
-					)
-				}, ['Go'])
+				hae('button', ['repo-input-submit'], {}, {click: submit}, ['Go'])
 			])
 		}
 		repo := State.repo :: {
@@ -485,6 +495,4 @@ render := () => update(h(
 
 refreshRepo()
 render()
-
-` TODO: routing `
 
